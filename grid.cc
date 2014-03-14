@@ -4,7 +4,8 @@ extern "C" {
 }
 
 #include "common.h"
-#include "gfx.h"
+#include "texture.h"
+#include "sprite.h"
 #include "grid.h"
 
 enum {
@@ -19,21 +20,32 @@ enum {
 	FALLING_BLOCK_ROTATION_TICS = 8,
 };
 
-static void
-block_draw(int type, int x, int y)
+static sprite_atlas *sprites;
+static const sprite *block_sprites[NUM_BLOCK_TYPES - 2]; // HACK
+
+void
+grid_load_sprites()
 {
-	static const struct rgb {
-		int r, g, b;
-	} block_colors[NUM_BLOCK_TYPES - 1] = {
-		{ 255, 0, 0 },
-		{ 0, 255, 0 },
-		{ 0, 0, 255 },
-		{ 255, 255, 255 },
-	};
+	sprites = sprite_atlas_manager::instance().get("SPRITES");
+	sprites->get_texture()->upload_to_vram();
 
-	const rgb *color = &block_colors[type - 1];
+	static const char *names[NUM_BLOCK_TYPES - 2] = { "red.png", "green.png", "blue.png" };
+	for (int i = 0; i < NUM_BLOCK_TYPES - 2; i++)
+		block_sprites[i] = sprites->get_sprite(names[i]);
+}
 
-	draw_rectangle(x, y, BLOCK_SIZE, BLOCK_SIZE, color->r, color->g, color->b);
+static void
+block_draw(psx::gpu::draw_list& draw_list, int type, int x, int y)
+{
+	if (type >= BLOCK_RED && type <= BLOCK_BLUE) { // HACK
+		const sprite *spr = block_sprites[type - 1]; // HACK
+
+		draw_list.add_sprite(
+			x, y,
+			spr->u(), spr->v(),
+			spr->width(), spr->height(),
+			psx::gpu::rgb(255, 255, 255));
+	}
 }
 
 static const int offsets[FALLING_BLOCK_NUM_ROTATIONS][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
@@ -73,13 +85,12 @@ grid::falling_block::initialize()
 }
 
 void
-grid::falling_block::draw(int base_x, int base_y) const
+grid::falling_block::draw(psx::gpu::draw_list& draw_list, int base_x, int base_y) const
 {
 	// first block
-	block_draw(blocks_[0], base_x + col_*BLOCK_SIZE, base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE);
+	block_draw(draw_list, blocks_[0], base_x + col_*BLOCK_SIZE, base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE);
 
 	// second block
-
 	int x, y;
 
 	if (state_ != STATE_ROTATING) {
@@ -102,7 +113,7 @@ grid::falling_block::draw(int base_x, int base_y) const
 		y = yo + rotation_offsets[rotation_][state_tics_].dy;
 	}
 
-	block_draw(blocks_[1], x, y);
+	block_draw(draw_list, blocks_[1], x, y);
 }
 
 bool
@@ -219,7 +230,7 @@ grid::initialize(int base_x, int base_y)
 }
 
 void
-grid::draw_blocks() const
+grid::draw_blocks(psx::gpu::draw_list& draw_list) const
 {
 	int y_offset;
 
@@ -239,7 +250,7 @@ grid::draw_blocks() const
 			if (*p == BLOCK_EMPTY)
 				hanging = true;
 			else
-				block_draw(*p, x, hanging ? y + y_offset : y);
+				block_draw(draw_list, *p, x, hanging ? y + y_offset : y);
 
 			y -= BLOCK_SIZE;
 		}
@@ -249,21 +260,9 @@ grid::draw_blocks() const
 }
 
 void
-grid::draw_background() const
+grid::draw_background(psx::gpu::draw_list& draw_list) const
 {
-	int y = base_y_;
-
-	for (int i = 0; i <= GRID_ROWS; i++) {
-		draw_line(base_x_, y, base_x_ + GRID_COLS*BLOCK_SIZE, y, 100, 100, 100);
-		y += BLOCK_SIZE;
-	}
-
-	int x = base_x_;
-
-	for (int i = 0; i <= GRID_COLS; i++) {
-		draw_line(x, base_y_, x, base_y_ + GRID_ROWS*BLOCK_SIZE, 100, 100, 100);
-		x += BLOCK_SIZE;
-	}
+	draw_list.add_rectangle(base_x_, base_y_, GRID_COLS*BLOCK_SIZE, GRID_ROWS*BLOCK_SIZE, psx::gpu::rgb(0, 0, 80));
 }
 
 void
@@ -366,17 +365,24 @@ grid::drop_hanging_blocks()
 void
 grid::draw() const
 {
-	draw_background();
-	draw_blocks();
+	psx::gpu::draw_list draw_list;
+
+	draw_background(draw_list);
+
+	draw_list.add_set_draw_mode(sprites->get_texture()->texture_page(), psx::gpu::COLOR_MODE_15BIT_DIRECT);
+
+	draw_blocks(draw_list);
 
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			falling_block_.draw(base_x_, base_y_);
+			falling_block_.draw(draw_list, base_x_, base_y_);
 			break;
 
 		default:
 			break;
 	}
+
+	draw_list.draw();
 }
 
 void

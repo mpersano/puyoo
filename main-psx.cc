@@ -33,17 +33,12 @@ dpad_state_update(void)
 void
 initialize(void)
 {
-	static unsigned int primitive_list[0x4000];
-
-	PSX_InitEx(PSX_INIT_NOBIOS);
+	PSX_Init();
 
 	GsInit();
 	GsClearMem();
 
 	GsSetVideoMode(320, 240, VMODE_PAL);
-
-	GsSetList(primitive_list);
-
 	SetVBlankHandler(vblank_handler);
 
 	game_initialize();
@@ -68,9 +63,7 @@ main_loop(void)
 		dpad_state_update();
 		game_update();
 
-		GsSortCls(0, 0, 0);
 		game_redraw();
-		GsDrawList();
 
 		while (GsIsDrawing())
 			;

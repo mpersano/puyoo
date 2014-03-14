@@ -9,12 +9,20 @@ CXXFLAGS = -Wall -g -O2 -std=c++0x
 LIBS =
 LDFLAGS =
 
-CXXFILES = game.cc grid.cc
+CXXFILES = \
+	game.cc \
+	grid.cc
 
 ifeq ($(PLATFORM),psx)
+PSXSDK_ROOT = /opt/psxsdk
+
 CXXFILES += \
-	main-psx.cc \
-	gfx-psx.cc
+	new.cc \
+	draw_list.cc \
+	sprite.cc \
+	texture.cc \
+	image.cc \
+	main-psx.cc
 
 CXXFLAGS += \
 	-fsigned-char \
@@ -59,7 +67,7 @@ $(TARGET).exe: $(TARGET)
 
 cdimage: $(TARGET).exe
 	mkdir -p $(CD_IMAGE_ROOT)
-	cp $(TARGET).exe $(CD_IMAGE_ROOT)
+	cp $(TARGET).exe sprites.tga sprites.spr $(CD_IMAGE_ROOT)
 	systemcnf $(TARGET).exe > $(CD_IMAGE_ROOT)/system.cnf
 	$(MKISOFS) -o $(TARGET).hsf -V $(TARGET) -sysid PLAYSTATION $(CD_IMAGE_ROOT)
 	mkpsxiso $(TARGET).hsf $(TARGET).bin $(LICENSE_FILE)

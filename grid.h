@@ -1,6 +1,8 @@
 #ifndef GRID_H_
 #define GRID_H_
 
+#include "draw_list.h"
+
 enum {
 	BLOCK_SIZE = 16,
 	GRID_ROWS = 12,
@@ -28,8 +30,8 @@ public:
 	bool is_empty(int r, int c) const;
 
 private:
-	void draw_blocks() const;
-	void draw_background() const;
+	void draw_blocks(psx::gpu::draw_list& draw_list) const;
+	void draw_background(psx::gpu::draw_list& draw_list) const;
 
 	void chain_explode(int r, int c, int type);
 	void clear_exploding_blocks();
@@ -52,7 +54,7 @@ private:
 	public:
 		void initialize();
 	
-		void draw(int base_x, int base_y) const;
+		void draw(psx::gpu::draw_list& drwa_list, int base_x, int base_y) const;
 		bool update(const grid *g, unsigned dpad_state);
 		bool can_move(const grid *g, int dr, int dc) const;
 		void copy_to_grid(grid *g);
@@ -80,5 +82,8 @@ private:
 	state state_;
 	int state_tics_;
 };
+
+void
+grid_load_sprites();
 
 #endif /* GRID_H_ */

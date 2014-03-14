@@ -12,6 +12,8 @@ game_initialize()
 
 	const int base_y = (SCREEN_HEIGHT - grid_height)/2;
 
+	grid_load_sprites();
+
 	left_grid.initialize(SCREEN_WIDTH/4 - grid_width/2, base_y);
 	right_grid.initialize(SCREEN_WIDTH*3/4 - grid_width/2, base_y);
 }
