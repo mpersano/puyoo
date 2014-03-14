@@ -3,7 +3,18 @@ extern "C" {
 }
 
 #include "texture.h"
+#include "draw_list.h"
 #include "sprite.h"
+
+void
+sprite::draw(psx::gpu::draw_list& draw_list, int x, int y) const
+{
+	draw_list.add_sprite(
+		x, y,
+		u_, v_,
+		width_, height_,
+		psx::gpu::rgb(255, 255, 255));
+}
 
 class file_reader
 {

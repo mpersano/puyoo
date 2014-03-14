@@ -37,15 +37,8 @@ grid_load_sprites()
 static void
 block_draw(psx::gpu::draw_list& draw_list, int type, int x, int y)
 {
-	if (type >= BLOCK_RED && type <= BLOCK_BLUE) { // HACK
-		const sprite *spr = block_sprites[type - 1]; // HACK
-
-		draw_list.add_sprite(
-			x, y,
-			spr->u(), spr->v(),
-			spr->width(), spr->height(),
-			psx::gpu::rgb(255, 255, 255));
-	}
+	if (type >= BLOCK_RED && type <= BLOCK_BLUE) // HACK
+		block_sprites[type - 1]->draw(draw_list, x, y);
 }
 
 static const int offsets[FALLING_BLOCK_NUM_ROTATIONS][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };

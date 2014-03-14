@@ -5,6 +5,7 @@
 
 namespace psx { namespace gpu {
 class texture;
+class draw_list;
 } }
 
 struct sprite
@@ -26,6 +27,8 @@ public:
 
 	int height() const
 	{ return height_; }
+
+	void draw(psx::gpu::draw_list& draw_list, int x, int y) const;
 
 private:
 	int u_, v_;
