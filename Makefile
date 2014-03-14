@@ -1,93 +1,52 @@
-ifeq ($(PLATFORM),psx)
-CROSS=mipsel-unknown-elf-
-endif
+TARGET = game
+
+SRC = src
+
+OBJ = obj
+
+OBJDIRS = $(OBJ)
+
+CXXFLAGS = \
+	-Wall \
+	-g \
+	-O2 \
+	-std=c++0x
+
+INCPATH = \
+	-I$(SRC) \
+	-I$(SRC)/platform/$(PLATFORM)
+
+LIBS =
+
+LDFLAGS =
+
+OBJS = \
+	$(OBJ)/game.o \
+	$(OBJ)/grid.o
+
+include $(SRC)/platform/$(PLATFORM)/$(PLATFORM).mk
 
 CXX = $(CROSS)g++
 LD = $(CROSS)g++
+MD = mkdir
 
-CXXFLAGS = -Wall -g -O2 -std=c++0x
-LIBS =
-LDFLAGS =
+CXXFLAGS += $(INCPATH)
 
-CXXFILES = \
-	game.cc \
-	grid.cc
+$(TARGET): maketree $(OBJS)
+	$(LD) $(OBJS) $(LIBS) $(LDFLAGS) -o $@
 
-ifeq ($(PLATFORM),psx)
-PSXSDK_ROOT = /opt/psxsdk
+maketree: $(sort $(OBJDIRS))
 
-CXXFILES += \
-	new.cc \
-	draw_list.cc \
-	sprite.cc \
-	texture.cc \
-	image.cc \
-	main-psx.cc
+$(sort $(OBJDIRS)):
+	mkdir -p $@
 
-CXXFLAGS += \
-	-fsigned-char \
-	-msoft-float \
-	-mno-gpopt \
-	-fno-builtin \
-	-fno-rtti \
-	-fno-exceptions \
-	-fno-threadsafe-statics \
-	-fno-use-cxa-atexit \
-	-G0 \
-	-I$(PSXSDK_ROOT)/include
-
-LDFLAGS += \
-	-nostdlib \
-	-lgcc \
-	-T $(PSXSDK_ROOT)/mipsel-unknown-elf/lib/ldscripts/playstation.x
-
-CD_IMAGE_ROOT = cdroot
-LICENSE_FILE  = $(PSXSDK_ROOT)/share/licenses/infoeur.dat
-MKISOFS = genisoimage
-else
-CXXFILES += \
-	main-sdl.cc \
-	gfx-sdl.cc
-
-CXXFLAGS += `pkg-config --cflags sdl gl glu`
-LIBS += `pkg-config --libs sdl gl glu`
-endif
-
-OBJS = $(CXXFILES:.cc=.o)
-
-TARGET = game
-
-$(TARGET): $(OBJS)
-	$(LD) $(OBJS) -o $@ $(LIBS) $(LDFLAGS)
-
-.cc.o:
-	$(CXX) $(CXXFLAGS) -c $<
-
-ifeq ($(PLATFORM),psx)
-$(TARGET).exe: $(TARGET)
-	elf2exe $(TARGET) $(TARGET).exe
-
-cdimage: $(TARGET).exe
-	mkdir -p $(CD_IMAGE_ROOT)
-	cp $(TARGET).exe sprites.tga sprites.spr $(CD_IMAGE_ROOT)
-	systemcnf $(TARGET).exe > $(CD_IMAGE_ROOT)/system.cnf
-	$(MKISOFS) -o $(TARGET).hsf -V $(TARGET) -sysid PLAYSTATION $(CD_IMAGE_ROOT)
-	mkpsxiso $(TARGET).hsf $(TARGET).bin $(LICENSE_FILE)
-	rm -f $(TARGET).hsf
-endif
-
-depend: .depend
-
-.depend: $(CXXFILES)
-	rm -f .depend
-	$(CXX) $(CXXFLAGS) -MM $^ > .depend;
+$(OBJ)/%.o: $(SRC)/%.cc
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f *o $(TARGET)
+	rm -rf $(OBJ)
 ifeq ($(PLATFORM),psx)
 	rm -rf $(CD_IMAGE_ROOT) $(foreach EXT,hsf bin cue exe,$(TARGET).$(EXT))
 endif
 
-include .depend
-
-.PHONY: all clean depend
+.PHONY: all clean

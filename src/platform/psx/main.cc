@@ -1,6 +1,4 @@
-extern "C" {
 #include <psx.h>
-}
 
 #include "game.h"
 #include "common.h"
