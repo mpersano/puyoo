@@ -28,3 +28,9 @@ operator delete[](void *ptr)
 {
 	free(ptr);
 }
+
+extern "C" int
+atexit(void (*)())
+{
+	return 0;
+}

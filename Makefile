@@ -31,6 +31,8 @@ CXXFLAGS += \
 	-fno-builtin \
 	-fno-rtti \
 	-fno-exceptions \
+	-fno-threadsafe-statics \
+	-fno-use-cxa-atexit \
 	-G0 \
 	-I$(PSXSDK_ROOT)/include
 

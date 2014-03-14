@@ -107,10 +107,8 @@ sprite_atlas::~sprite_atlas()
 sprite_atlas_manager&
 sprite_atlas_manager::instance()
 {
-	static sprite_atlas_manager *instance_ = 0;
-	if (instance_ == 0)
-		instance_ = new sprite_atlas_manager;
-	return *instance_;
+	static sprite_atlas_manager instance_;
+	return instance_;
 }
 
 sprite_atlas_manager::sprite_atlas_manager()
