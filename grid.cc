@@ -20,7 +20,7 @@ enum {
 	FALLING_BLOCK_ROTATION_TICS = 8,
 };
 
-static sprite_atlas *sprites;
+static const sprite_atlas *sprites;
 static const sprite *block_sprites[NUM_BLOCK_TYPES - 2]; // HACK
 
 void

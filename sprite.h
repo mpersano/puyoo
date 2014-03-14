@@ -41,7 +41,7 @@ public:
 	sprite_atlas(const char *name);
 	virtual ~sprite_atlas();
 
-	const sprite *get_sprite(const char *name)
+	const sprite *get_sprite(const char *name) const
 	{ return dict_.get(name); }
 
 	const psx::gpu::texture *get_texture() const

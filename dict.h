@@ -29,6 +29,11 @@ public:
 
 	T *get(const char *key)
 	{
+		return const_cast<T *>(static_cast<const dict<T> *>(this)->get(key));
+	}
+
+	const T *get(const char *key) const
+	{
 		for (entry *p = buckets_[hash(key)%NUM_BUCKETS]; p; p = p->next_) {
 			if (!::strcmp(p->key_, key))
 				return p->value_;
