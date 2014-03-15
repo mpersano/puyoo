@@ -8,11 +8,9 @@ OBJDIRS += $(PSXOBJ)
 PSXSDK_ROOT = /opt/psxsdk
 
 OBJS += \
-	$(PSXSRC)/new.o \
-	$(PSXSRC)/draw_list.o \
-	$(PSXSRC)/sprite.o \
-	$(PSXSRC)/texture.o \
-	$(PSXSRC)/main.o
+	$(PSXOBJ)/new.o \
+	$(PSXOBJ)/draw_list.o \
+	$(PSXOBJ)/main.o
 
 CXXFLAGS += \
 	-fsigned-char \

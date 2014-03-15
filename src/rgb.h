@@ -1,6 +1,8 @@
 #ifndef GFX_RGB_H_
 #define GFX_RGB_H_
 
+#include <stdint.h>
+
 namespace gfx {
 
 struct rgb

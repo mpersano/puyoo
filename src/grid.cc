@@ -1,7 +1,6 @@
-extern "C" {
 #include <stdlib.h>
 #include <string.h>
-}
+#include <stdio.h>
 
 #include "common.h"
 #include "texture.h"
@@ -30,15 +29,22 @@ grid_load_sprites()
 	sprites->get_texture()->upload_to_vram();
 
 	static const char *names[NUM_BLOCK_TYPES - 2] = { "red.png", "green.png", "blue.png" };
-	for (int i = 0; i < NUM_BLOCK_TYPES - 2; i++)
+	for (int i = 0; i < NUM_BLOCK_TYPES - 2; i++) {
 		block_sprites[i] = sprites->get_sprite(names[i]);
+		printf("%s -> %p\n", names[i], block_sprites[i]);
+	}
 }
 
 static void
-block_draw(psx::gpu::draw_list& draw_list, int type, int x, int y)
+block_draw(gfx::context& gfx, int type, int x, int y)
 {
-	if (type >= BLOCK_RED && type <= BLOCK_BLUE) // HACK
-		block_sprites[type - 1]->draw(draw_list, x, y);
+	if (type >= BLOCK_RED && type <= BLOCK_BLUE) { // HACK
+#if 1
+		gfx.add_rectangle(x, y, 16, 16, gfx::rgb(255, 255, 255));
+#else
+		block_sprites[type - 1]->draw(gfx, x, y);
+#endif
+	}
 }
 
 static const int offsets[FALLING_BLOCK_NUM_ROTATIONS][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
@@ -78,10 +84,10 @@ grid::falling_block::initialize()
 }
 
 void
-grid::falling_block::draw(psx::gpu::draw_list& draw_list, int base_x, int base_y) const
+grid::falling_block::draw(gfx::context& gfx, int base_x, int base_y) const
 {
 	// first block
-	block_draw(draw_list, blocks_[0], base_x + col_*BLOCK_SIZE, base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE);
+	block_draw(gfx, blocks_[0], base_x + col_*BLOCK_SIZE, base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE);
 
 	// second block
 	int x, y;
@@ -106,7 +112,7 @@ grid::falling_block::draw(psx::gpu::draw_list& draw_list, int base_x, int base_y
 		y = yo + rotation_offsets[rotation_][state_tics_].dy;
 	}
 
-	block_draw(draw_list, blocks_[1], x, y);
+	block_draw(gfx, blocks_[1], x, y);
 }
 
 bool
@@ -223,7 +229,7 @@ grid::initialize(int base_x, int base_y)
 }
 
 void
-grid::draw_blocks(psx::gpu::draw_list& draw_list) const
+grid::draw_blocks(gfx::context& gfx) const
 {
 	int y_offset;
 
@@ -243,7 +249,7 @@ grid::draw_blocks(psx::gpu::draw_list& draw_list) const
 			if (*p == BLOCK_EMPTY)
 				hanging = true;
 			else
-				block_draw(draw_list, *p, x, hanging ? y + y_offset : y);
+				block_draw(gfx, *p, x, hanging ? y + y_offset : y);
 
 			y -= BLOCK_SIZE;
 		}
@@ -253,9 +259,9 @@ grid::draw_blocks(psx::gpu::draw_list& draw_list) const
 }
 
 void
-grid::draw_background(psx::gpu::draw_list& draw_list) const
+grid::draw_background(gfx::context& gfx) const
 {
-	draw_list.add_rectangle(base_x_, base_y_, GRID_COLS*BLOCK_SIZE, GRID_ROWS*BLOCK_SIZE, psx::gpu::rgb(0, 0, 80));
+	gfx.add_rectangle(base_x_, base_y_, GRID_COLS*BLOCK_SIZE, GRID_ROWS*BLOCK_SIZE, gfx::rgb(0, 0, 80));
 }
 
 void
@@ -356,26 +362,22 @@ grid::drop_hanging_blocks()
 }
 
 void
-grid::draw() const
+grid::draw(gfx::context& gfx) const
 {
-	psx::gpu::draw_list draw_list;
+	draw_background(gfx);
 
-	draw_background(draw_list);
+	gfx.bind_texture(sprites->get_texture());
 
-	draw_list.add_set_draw_mode(static_cast<const gfx::psx_texture *>(sprites->get_texture())->page(), psx::gpu::COLOR_MODE_15BIT_DIRECT);
-
-	draw_blocks(draw_list);
+	draw_blocks(gfx);
 
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			falling_block_.draw(draw_list, base_x_, base_y_);
+			falling_block_.draw(gfx, base_x_, base_y_);
 			break;
 
 		default:
 			break;
 	}
-
-	draw_list.draw();
 }
 
 void

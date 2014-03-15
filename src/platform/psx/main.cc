@@ -3,6 +3,8 @@
 #include "game.h"
 #include "common.h"
 
+extern "C" int printf(const char *fmt, ...);
+
 unsigned dpad_state;
 
 static volatile bool vblank = false;
@@ -31,7 +33,9 @@ dpad_state_update(void)
 void
 initialize(void)
 {
+printf("initialize\n");
 	PSX_Init();
+printf("after PSX_Init\n");
 
 	GsInit();
 	GsClearMem();
@@ -68,9 +72,12 @@ main_loop(void)
 	}
 }
 
+extern "C" int printf(const char *fmt, ...);
+
 int
 main(int argc, char *argv[])
 {
+printf("main\n");
 	initialize();
 	main_loop();
 

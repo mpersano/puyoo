@@ -3,14 +3,16 @@
 #include "draw_list.h"
 #include "sprite.h"
 
+extern "C" int printf(const char *fmt, ...);
+
 void
-sprite::draw(psx::gpu::draw_list& draw_list, int x, int y) const
+sprite::draw(gfx::context& gfx, int x, int y) const
 {
-	draw_list.add_sprite(
+	gfx.add_sprite(
 		x, y,
 		u_, v_,
 		width_, height_,
-		psx::gpu::rgb(255, 255, 255));
+		gfx::rgb(255, 255, 255));
 }
 
 class file_reader

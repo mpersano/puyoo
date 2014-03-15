@@ -3,10 +3,7 @@
 
 #include "dict.h"
 #include "texture.h"
-
-namespace psx { namespace gpu {
-class draw_list;
-} }
+#include "gfx_context.h"
 
 struct sprite
 {
@@ -28,7 +25,7 @@ public:
 	int height() const
 	{ return height_; }
 
-	void draw(psx::gpu::draw_list& draw_list, int x, int y) const;
+	void draw(gfx::context& gfx, int x, int y) const;
 
 private:
 	int u_, v_;

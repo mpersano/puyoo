@@ -9,7 +9,7 @@ OBJDIRS = $(OBJ)
 CXXFLAGS = \
 	-Wall \
 	-g \
-	-O2 \
+	-O0 \
 	-std=c++0x
 
 INCPATH = \
@@ -23,7 +23,8 @@ LDFLAGS =
 OBJS = \
 	$(OBJ)/game.o \
 	$(OBJ)/grid.o \
-	$(OBJ)/image.o
+	$(OBJ)/image.o \
+	$(OBJ)/sprite.o \
 
 include $(SRC)/platform/$(PLATFORM)/$(PLATFORM).mk
 

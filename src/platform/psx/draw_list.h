@@ -3,21 +3,9 @@
 
 #include <stdint.h>
 
+#include "rgb.h"
+
 namespace psx { namespace gpu {
-
-struct rgb
-{
-	rgb(int red, int green, int blue)
-	: red(red), green(green), blue(blue)
-	{ }
-
-	operator uint32_t() const
-	{
-		return (blue << 16) | (green << 8) | red;
-	}
-
-	int red, green, blue;
-};
 
 enum color_mode {
 	COLOR_MODE_4BIT_CLUT = 0,
@@ -33,11 +21,11 @@ public:
 	void reset();
 	void draw();
 
-	void add_dot(int x, int y, const rgb& color);
-	void add_rectangle(int x, int y, int width, int height, const rgb& colorb);
-	void add_sprite_8x8(int x, int y, int u, int v, const rgb& color);
-	void add_sprite_16x16(int x, int y, int u, int v, const rgb& color);
-	void add_sprite(int x, int y, int u, int v, int width, int height, const rgb& color);
+	void add_dot(int x, int y, const gfx::rgb& color);
+	void add_rectangle(int x, int y, int width, int height, const gfx::rgb& colorb);
+	void add_sprite_8x8(int x, int y, int u, int v, const gfx::rgb& color);
+	void add_sprite_16x16(int x, int y, int u, int v, const gfx::rgb& color);
+	void add_sprite(int x, int y, int u, int v, int width, int height, const gfx::rgb& color);
 	void add_set_draw_mode(int texture_page, color_mode texture_color_mode);
 
 private:

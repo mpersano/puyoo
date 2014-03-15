@@ -15,7 +15,7 @@ draw_list::reset()
 }
 
 void
-draw_list::add_dot(int x, int y, const rgb& color)
+draw_list::add_dot(int x, int y, const gfx::rgb& color)
 {
 	enqueue_packet(
 		(PACKET_DOT << 24) | color,
@@ -23,7 +23,7 @@ draw_list::add_dot(int x, int y, const rgb& color)
 }
 
 void
-draw_list::add_rectangle(int x, int y, int width, int height, const rgb& color)
+draw_list::add_rectangle(int x, int y, int width, int height, const gfx::rgb& color)
 {
 	enqueue_packet(
 		(PACKET_RECTANGLE << 24) | color,
@@ -32,7 +32,7 @@ draw_list::add_rectangle(int x, int y, int width, int height, const rgb& color)
 }
 
 void
-draw_list::add_sprite_8x8(int x, int y, int u, int v, const rgb& color)
+draw_list::add_sprite_8x8(int x, int y, int u, int v, const gfx::rgb& color)
 {
 	enqueue_packet(
 		(PACKET_SPRITE_8 << 24) | color,
@@ -41,7 +41,7 @@ draw_list::add_sprite_8x8(int x, int y, int u, int v, const rgb& color)
 }
 
 void
-draw_list::add_sprite_16x16(int x, int y, int u, int v, const rgb& color)
+draw_list::add_sprite_16x16(int x, int y, int u, int v, const gfx::rgb& color)
 {
 	enqueue_packet(
 		(PACKET_SPRITE_16 << 24) | color,
@@ -50,7 +50,7 @@ draw_list::add_sprite_16x16(int x, int y, int u, int v, const rgb& color)
 }
 
 void
-draw_list::add_sprite(int x, int y, int u, int v, int width, int height, const rgb& color)
+draw_list::add_sprite(int x, int y, int u, int v, int width, int height, const gfx::rgb& color)
 {
 	enqueue_packet(
 		(PACKET_SPRITE << 24) | color,
