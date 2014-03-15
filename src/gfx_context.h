@@ -2,7 +2,6 @@
 #define GFX_CONTEXT_H_
 
 #include "rgb.h"
-#include "gfx_context_impl.h"
 
 namespace gfx {
 
@@ -26,8 +25,12 @@ public:
 	}
 };
 
-typedef context_base<context_impl> context;
+}
 
+#include "gfx_context_impl.h"
+
+namespace gfx {
+typedef context_base<context_impl> context;
 }
 
 #endif // GFX_CONTEXT_H_

@@ -2,9 +2,9 @@
 #define SPRITE_H_
 
 #include "dict.h"
+#include "texture.h"
 
 namespace psx { namespace gpu {
-class texture;
 class draw_list;
 } }
 
@@ -44,11 +44,11 @@ public:
 	const sprite *get_sprite(const char *name) const
 	{ return dict_.get(name); }
 
-	const psx::gpu::texture *get_texture() const
+	const gfx::texture *get_texture() const
 	{ return texture_; }
 
 private:
-	psx::gpu::texture *texture_;
+	gfx::texture *texture_;
 	dict<sprite> dict_;
 };
 

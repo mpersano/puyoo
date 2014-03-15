@@ -18,7 +18,7 @@ public:
 	const uint32_t *data() const
 	{ return data_; }
 
-	static image *load_from_tga(const char *source);
+	static image *load_from_tga(const char *path);
 
 private:
 	image(size_t width, size_t height);

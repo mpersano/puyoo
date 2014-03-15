@@ -32,11 +32,11 @@ struct tga_header {
 } __attribute__ ((packed));
 
 image *
-image::load_from_tga(const char *source)
+image::load_from_tga(const char *path)
 {
 	FILE *in;
 	
-	if ((in = fopen(source, "rb")) == 0)
+	if ((in = fopen(path, "rb")) == 0)
 		return 0;
 
 	tga_header header;

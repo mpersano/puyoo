@@ -362,7 +362,7 @@ grid::draw() const
 
 	draw_background(draw_list);
 
-	draw_list.add_set_draw_mode(sprites->get_texture()->texture_page(), psx::gpu::COLOR_MODE_15BIT_DIRECT);
+	draw_list.add_set_draw_mode(static_cast<const gfx::psx_texture *>(sprites->get_texture())->page(), psx::gpu::COLOR_MODE_15BIT_DIRECT);
 
 	draw_blocks(draw_list);
 

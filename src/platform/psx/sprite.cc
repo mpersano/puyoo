@@ -1,8 +1,5 @@
-extern "C" {
 #include <stdio.h>
-}
 
-#include "texture.h"
 #include "draw_list.h"
 #include "sprite.h"
 
@@ -81,7 +78,7 @@ sprite_atlas::sprite_atlas(const char *name)
 	char texture_path[80];
 	sprintf(texture_path, "cdrom:\\%s.TGA;1", name);
 
-	texture_ = psx::gpu::texture::load_from_tga(texture_path, 5);
+	texture_ = gfx::texture::load_from_tga(texture_path);
 	// XXX: error checking
 
 	char spr_path[80];
