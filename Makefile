@@ -22,7 +22,8 @@ LDFLAGS =
 
 OBJS = \
 	$(OBJ)/game.o \
-	$(OBJ)/grid.o
+	$(OBJ)/grid.o \
+	$(OBJ)/image.o
 
 include $(SRC)/platform/$(PLATFORM)/$(PLATFORM).mk
 

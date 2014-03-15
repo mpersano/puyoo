@@ -12,7 +12,6 @@ OBJS += \
 	$(PSXSRC)/draw_list.o \
 	$(PSXSRC)/sprite.o \
 	$(PSXSRC)/texture.o \
-	$(PSXSRC)/image.o \
 	$(PSXSRC)/main.o
 
 CXXFLAGS += \
