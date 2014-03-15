@@ -5,11 +5,11 @@
 
 namespace psx { namespace gpu {
 
-static uint32_t *GPU_CONTROL_PORT		= reinterpret_cast<uint32_t *>(0x1f801814);
-static uint32_t *GPU_DATA_PORT			= reinterpret_cast<uint32_t *>(0x1f801810);
-static uint32_t *DMA_BASE_ADDRESS_PORT		= reinterpret_cast<uint32_t *>(0x1f8010a0);
-static uint32_t *DMA_BLOCK_CONTROL_PORT		= reinterpret_cast<uint32_t *>(0x1f8010a4);
-static uint32_t *DMA_CHANNEL_CONTROL_PORT	= reinterpret_cast<uint32_t *>(0x1f8010a8);
+static volatile uint32_t *GPU_CONTROL_PORT		= reinterpret_cast<volatile uint32_t *>(0x1f801814);
+static volatile uint32_t *GPU_DATA_PORT			= reinterpret_cast<volatile uint32_t *>(0x1f801810);
+static volatile uint32_t *DMA_BASE_ADDRESS_PORT		= reinterpret_cast<volatile uint32_t *>(0x1f8010a0);
+static volatile uint32_t *DMA_BLOCK_CONTROL_PORT	= reinterpret_cast<volatile uint32_t *>(0x1f8010a4);
+static volatile uint32_t *DMA_CHANNEL_CONTROL_PORT	= reinterpret_cast<volatile uint32_t *>(0x1f8010a8);
 
 enum dma_mode {
 	DMA_DISABLED = 0,
