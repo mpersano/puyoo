@@ -38,13 +38,8 @@ grid_load_sprites()
 static void
 block_draw(gfx::context& gfx, int type, int x, int y)
 {
-	if (type >= BLOCK_RED && type <= BLOCK_BLUE) { // HACK
-#if 1
-		gfx.add_rectangle(x, y, 16, 16, gfx::rgb(255, 255, 255));
-#else
+	if (type >= BLOCK_RED && type <= BLOCK_BLUE) // HACK
 		block_sprites[type - 1]->draw(gfx, x, y);
-#endif
-	}
 }
 
 static const int offsets[FALLING_BLOCK_NUM_ROTATIONS][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };

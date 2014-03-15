@@ -26,7 +26,7 @@ printf("game_initialize\n");
 void
 game_redraw()
 {
-	static gfx::context gfx;
+	static gfx::context_impl gfx;
 
 	gfx.begin();
 	left_grid.draw(gfx);
