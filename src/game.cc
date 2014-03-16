@@ -5,8 +5,6 @@
 #include "game.h"
 #include "gfx_context.h"
 
-#include "draw_list.h"
-
 static grid left_grid, right_grid;
 
 void

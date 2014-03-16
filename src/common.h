@@ -16,4 +16,6 @@ enum dpad_bits {
 
 extern unsigned dpad_state;
 
+extern const char *make_path(const char *name, const char *ext);
+
 #endif /* COMMON_H_ */

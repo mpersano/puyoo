@@ -53,7 +53,6 @@ private:
 };
 
 typedef psx_texture texture_impl;
-typedef texture_base<psx_texture> texture;
 
 }
 

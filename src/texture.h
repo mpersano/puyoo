@@ -27,6 +27,12 @@ public:
 		static_cast<const Impl *>(this)->upload_to_vram();
 	}
 
+	size_t width() const
+	{ return image_->width(); }
+
+	size_t height() const
+	{ return image_->height(); }
+
 protected:
 	image *image_;
 };

@@ -1,8 +1,8 @@
 #ifndef IMAGE_H_
 #define IMAGE_H_
 
-#include <types.h>
 #include <stdint.h>
+#include <stddef.h>
 
 class image
 {

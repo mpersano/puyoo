@@ -1,9 +1,7 @@
 #include <stdio.h>
 
-#include "draw_list.h"
+#include "common.h"
 #include "sprite.h"
-
-extern "C" int printf(const char *fmt, ...);
 
 void
 sprite::draw(gfx::context& gfx, int x, int y) const
@@ -77,16 +75,10 @@ file_reader::read_string()
 
 sprite_atlas::sprite_atlas(const char *name)
 {
-	char texture_path[80];
-	sprintf(texture_path, "cdrom:\\%s.TGA;1", name);
-
-	texture_ = gfx::texture::load_from_tga(texture_path);
+	texture_ = gfx::texture::load_from_tga(make_path(name, "TGA"));
 	// XXX: error checking
 
-	char spr_path[80];
-	sprintf(spr_path, "cdrom:\\%s.SPR;1", name);
-
-	file_reader reader(spr_path);
+	file_reader reader(make_path(name, "SPR"));
 
 	int num_sprites = reader.read_uint8();
 

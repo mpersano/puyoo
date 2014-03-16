@@ -37,7 +37,7 @@ $(TARGET).exe: $(TARGET)
 
 cdimage: $(TARGET).exe
 	mkdir -p $(CD_IMAGE_ROOT)
-	cp $(TARGET).exe sprites.tga sprites.spr $(CD_IMAGE_ROOT)
+	cp $(TARGET).exe SPRITES.TGA SPRITES.SPR $(CD_IMAGE_ROOT)
 	systemcnf $(TARGET).exe > $(CD_IMAGE_ROOT)/system.cnf
 	$(MKISOFS) -o $(TARGET).hsf -V $(TARGET) -sysid PLAYSTATION $(CD_IMAGE_ROOT)
 	mkpsxiso $(TARGET).hsf $(TARGET).bin $(LICENSE_FILE)

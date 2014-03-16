@@ -1,4 +1,5 @@
 #include <psx.h>
+#include <stdio.h>
 
 #include "game.h"
 #include "common.h"
@@ -8,6 +9,14 @@ extern "C" int printf(const char *fmt, ...);
 unsigned dpad_state;
 
 static volatile bool vblank = false;
+
+const char *
+make_path(const char *name, const char *ext)
+{
+	static char buf[80];
+	sprintf(buf, "cdrom:\\%s.%s;1", name, ext);
+	return buf;
+}
 
 static void
 vblank_handler()
