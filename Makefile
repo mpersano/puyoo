@@ -1,3 +1,7 @@
+ifndef PLATFORM
+PLATFORM = sdl
+endif
+
 TARGET = game
 
 SRC = src
