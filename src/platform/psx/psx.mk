@@ -8,7 +8,6 @@ OBJDIRS += $(PSXOBJ)
 PSXSDK_ROOT = /opt/psxsdk
 
 OBJS += \
-	$(PSXOBJ)/new.o \
 	$(PSXOBJ)/draw_list.o \
 	$(PSXOBJ)/main.o
 
