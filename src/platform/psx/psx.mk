@@ -12,6 +12,7 @@ OBJS += \
 	$(PSXOBJ)/main.o
 
 CXXFLAGS += \
+	-mlong-calls \
 	-fsigned-char \
 	-msoft-float \
 	-mno-gpopt \
