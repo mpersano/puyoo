@@ -22,6 +22,16 @@ public:
 
 	void upload_to_vram() const
 	{
+		uint32_t *data = new uint32_t[image_->width()*image_->height()];
+
+		const uint32_t *src = image_->data();
+		uint32_t *dest = data;
+
+		for (size_t i = 0; i < image_->width()*image_->height(); i++) {
+			uint32_t v = *src++;
+			*dest++ = ((v >> 16) & 0xff) | (v & 0xff00) | ((v & 0xff) << 16) | (v & 0xff000000);
+		}
+
 		bind();
 
 		glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -39,7 +49,9 @@ public:
 			0,
 			GL_RGBA,
 			GL_UNSIGNED_BYTE,
-			image_->data());
+			data);
+
+		delete[] data;
 	}
 
 	void bind() const

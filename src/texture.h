@@ -9,10 +9,6 @@ template <class Impl>
 class texture_base
 {
 public:
-	texture_base(image *img)
-	: image_(img)
-	{ }
-
 	virtual ~texture_base()
 	{ delete image_; }
 
@@ -34,6 +30,10 @@ public:
 	{ return image_->height(); }
 
 protected:
+	texture_base(image *img)
+	: image_(img)
+	{ }
+
 	image *image_;
 };
 
