@@ -28,7 +28,15 @@ grid_load_sprites()
 	sprites = sprite_atlas_manager::instance().get("SPRITES");
 	sprites->get_texture()->upload_to_vram();
 
-	static const char *names[NUM_BLOCK_TYPES - 2] = { "red.png", "green.png", "blue.png" };
+	static const char *names[NUM_BLOCK_TYPES - 2] = {
+		"cyan.png",
+		"red.png",
+		"blue.png",
+		"green.png",
+		"purple.png",
+		"yellow.png",
+	};
+
 	for (int i = 0; i < NUM_BLOCK_TYPES - 2; i++) {
 		block_sprites[i] = sprites->get_sprite(names[i]);
 		printf("%s -> %p\n", names[i], block_sprites[i]);
@@ -38,7 +46,7 @@ grid_load_sprites()
 static void
 block_draw(gfx::context& gfx, int type, int x, int y)
 {
-	if (type >= BLOCK_RED && type <= BLOCK_BLUE) // HACK
+	if (type >= BLOCK_EMPTY + 1 && type <= BLOCK_EXPLODING - 1)
 		block_sprites[type - 1]->draw(gfx, x, y);
 }
 
