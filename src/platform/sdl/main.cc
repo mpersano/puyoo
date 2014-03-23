@@ -8,8 +8,7 @@
 #include "game.h"
 
 enum {
-	FRAMES_PER_SECOND = 30,
-	FRAME_INTERVAL = 1000/FRAMES_PER_SECOND
+	FRAME_INTERVAL = 20
 };
 
 static bool running = false;
