@@ -8,9 +8,11 @@
 struct sprite
 {
 public:
-	sprite(int u, int v, int width, int height)
+	sprite(int u, int v)
 	: u_(u), v_(v)
-	, width_(width), height_(height)
+	{ }
+
+	virtual ~sprite()
 	{ }
 
 	int u() const
@@ -19,17 +21,14 @@ public:
 	int v() const
 	{ return v_; }
 
-	int width() const
-	{ return width_; }
+	virtual int width() const = 0;
 
-	int height() const
-	{ return height_; }
+	virtual int height() const = 0;
 
-	void draw(gfx::context& gfx, int x, int y) const;
+	virtual void draw(gfx::context& gfx, int x, int y) const = 0;
 
-private:
+protected:
 	int u_, v_;
-	int width_, height_;
 };
 
 class sprite_atlas

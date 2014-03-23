@@ -4,16 +4,61 @@
 #include "file_reader.h"
 #include "sprite.h"
 
-void
-sprite::draw(gfx::context& gfx, int x, int y) const
+class sprite_8x8 : public sprite
 {
-	if (width_ == 8 && height_ == 8)
-		gfx.add_sprite_8x8(x, y, u_, v_, gfx::rgb(255, 255, 255));
-	else if (width_ == 16 && height_ == 16)
-		gfx.add_sprite_16x16(x, y, u_, v_, gfx::rgb(255, 255, 255));
-	else
-		gfx.add_sprite(x, y, u_, v_, width_, height_, gfx::rgb(255, 255, 255));
-}
+public:
+	sprite_8x8(int u, int v)
+	: sprite(u, v)
+	{ }
+
+	int width() const
+	{ return 8; }
+
+	int height() const
+	{ return 8; }
+
+	void draw(gfx::context& gfx, int x, int y) const
+	{ gfx.add_sprite_8x8(x, y, u_, v_, gfx::rgb(255, 255, 255)); }
+};
+
+class sprite_16x16 : public sprite
+{
+public:
+	sprite_16x16(int u, int v)
+	: sprite(u, v)
+	{ }
+
+	int width() const
+	{ return 16; }
+
+	int height() const
+	{ return 16; }
+
+	void draw(gfx::context& gfx, int x, int y) const
+	{ gfx.add_sprite_16x16(x, y, u_, v_, gfx::rgb(255, 255, 255)); }
+};
+
+class sprite_generic : public sprite
+{
+public:
+	sprite_generic(int u, int v, int width, int height)
+	: sprite(u, v)
+	, width_(width)
+	, height_(height)
+	{ }
+
+	int width() const
+	{ return width_; }
+
+	int height() const
+	{ return height_; }
+
+	void draw(gfx::context& gfx, int x, int y) const
+	{ gfx.add_sprite(x, y, u_, v_, width_, height_, gfx::rgb(255, 255, 255)); }
+
+private:
+	int width_, height_;
+};
 
 sprite_atlas::sprite_atlas(const char *name)
 {
@@ -36,7 +81,16 @@ sprite_atlas::sprite_atlas(const char *name)
 		printf("sprite: %s %s %d %d %d %d\n",
 		  orig_image, sheet_image, u, v, width, height);
 
-		dict_.put(orig_image, new sprite(u, v, width, height));
+		sprite *spr;
+
+		if (width == 8 && height == 8)
+			spr = new sprite_8x8(u, v);
+		else if (width == 16 && height == 16)
+			spr = new sprite_16x16(u, v);
+		else
+			spr = new sprite_generic(u, v, width, height);
+
+		dict_.put(orig_image, spr);
 
 		delete[] orig_image;
 		delete[] sheet_image;
