@@ -11,24 +11,25 @@ enum {
 	MIN_CHAIN_SIZE = 3,
 
 	DROPPING_BLOCK_TICS = 10,
-	EXPLODING_BLOCK_TICS = 5,
+	EXPLODING_BLOCK_TICS = 12,
 
 	FALLING_BLOCK_UPDATE_INTERVAL = 3,
 	FALLING_BLOCK_DROP_INTERVAL = 30,
 	FALLING_BLOCK_NUM_ROTATIONS = 4,
 	FALLING_BLOCK_ROTATION_TICS = 8,
+
+	NUM_EXPLOSION_FRAMES = 4,
 };
 
 static const sprite_atlas *sprites;
-static const sprite *block_sprites[NUM_BLOCK_TYPES - 2]; // HACK
 
-void
-grid_load_sprites()
+static const sprite *block_sprites[NUM_BLOCK_TYPES];
+static const sprite *explosion_sprites[NUM_EXPLOSION_FRAMES];
+
+static void
+initialize_block_sprites()
 {
-	sprites = sprite_atlas_manager::instance().get("SPRITES");
-	sprites->get_texture()->upload_to_vram();
-
-	static const char *names[NUM_BLOCK_TYPES - 2] = {
+	static const char *names[NUM_BLOCK_TYPES] = {
 		"cyan.png",
 		"red.png",
 		"blue.png",
@@ -37,10 +38,30 @@ grid_load_sprites()
 		"yellow.png",
 	};
 
-	for (int i = 0; i < NUM_BLOCK_TYPES - 2; i++) {
+	for (int i = 0; i < NUM_BLOCK_TYPES; i++) {
 		block_sprites[i] = sprites->get_sprite(names[i]);
 		printf("%s -> %p\n", names[i], block_sprites[i]);
 	}
+}
+
+static void
+initialize_explosion_sprites()
+{
+	for (int i = 0; i < NUM_EXPLOSION_FRAMES; i++) {
+		char name[80];
+		sprintf(name, "explosion-%d.png", i);
+		explosion_sprites[i] = sprites->get_sprite(name);
+	}
+}
+
+void
+grid_load_sprites()
+{
+	sprites = sprite_atlas_manager::instance().get("SPRITES");
+	sprites->get_texture()->upload_to_vram();
+
+	initialize_block_sprites();
+	initialize_explosion_sprites();
 }
 
 static void
@@ -73,8 +94,8 @@ grid::set_block(int r, int c, int type)
 void
 grid::falling_block::initialize()
 {
-	blocks_[0] = rand()%(NUM_BLOCK_TYPES - 2) + 1;
-	blocks_[1] = rand()%(NUM_BLOCK_TYPES - 2) + 1;
+	blocks_[0] = rand()%NUM_BLOCK_TYPES + 1;
+	blocks_[1] = rand()%NUM_BLOCK_TYPES + 1;
 
 	row_ = GRID_ROWS - 1;
 	col_ = GRID_COLS/2 - 1;
@@ -249,10 +270,15 @@ grid::draw_blocks(gfx::context& gfx) const
 		int y = base_y_ + (GRID_ROWS - 1)*BLOCK_SIZE;
 
 		for (const unsigned char *p = &blocks_[c]; p < &blocks_[GRID_ROWS*GRID_COLS]; p += GRID_COLS) {
-			if (*p == BLOCK_EMPTY)
+			if (*p == BLOCK_EMPTY) {
 				hanging = true;
-			else
+			} else if (*p == BLOCK_EXPLODING) {
+				// assert(state_ == STATE_EXPLODING_BLOCKS);
+				const int frame = (state_tics_*NUM_EXPLOSION_FRAMES)/EXPLODING_BLOCK_TICS;
+				explosion_sprites[frame]->draw(gfx, x, y);
+			} else {
 				block_draw(gfx, *p, x, hanging ? y + y_offset : y);
+			}
 
 			y -= BLOCK_SIZE;
 		}
