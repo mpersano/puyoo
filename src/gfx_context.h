@@ -30,6 +30,16 @@ public:
 		static_cast<Impl *>(this)->add_sprite(x, y, u, v, width, height, color);
 	}
 
+	void add_sprite_16x16(int x, int y, int u, int v, const rgb& color)
+	{
+		static_cast<Impl *>(this)->add_sprite_16x16(x, y, u, v, color);
+	}
+
+	void add_sprite_8x8(int x, int y, int u, int v, const rgb& color)
+	{
+		static_cast<Impl *>(this)->add_sprite_8x8(x, y, u, v, color);
+	}
+
 	void bind_texture(const texture *tex)
 	{
 		static_cast<Impl *>(this)->bind_texture(tex);

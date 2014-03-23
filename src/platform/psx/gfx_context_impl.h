@@ -23,6 +23,16 @@ public:
 		draw_list_.add_rectangle(x, y, width, height, color);
 	}
 
+	void add_sprite_8x8(int x, int y, int u, int v, const rgb& color)
+	{
+		draw_list_.add_sprite_8x8(x, y, u, v, color);
+	}
+
+	void add_sprite_16x16(int x, int y, int u, int v, const rgb& color)
+	{
+		draw_list_.add_sprite_16x16(x, y, u, v, color);
+	}
+
 	void add_sprite(int x, int y, int u, int v, int width, int height, const rgb& color)
 	{
 		draw_list_.add_sprite(x, y, u, v, width, height, color);

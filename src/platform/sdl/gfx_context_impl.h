@@ -42,6 +42,16 @@ public:
 		glEnd();
 	}
 
+	void add_sprite_8x8(int x, int y, int u, int v, const rgb& color)
+	{
+		add_sprite(x, y, u, v, 8, 8, color);
+	}
+
+	void add_sprite_16x16(int x, int y, int u, int v, const rgb& color)
+	{
+		add_sprite(x, y, u, v, 16, 16, color);
+	}
+
 	void bind_texture(const texture *tex)
 	{
 		glEnable(GL_TEXTURE_RECTANGLE);

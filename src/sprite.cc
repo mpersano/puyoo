@@ -7,11 +7,12 @@
 void
 sprite::draw(gfx::context& gfx, int x, int y) const
 {
-	gfx.add_sprite(
-		x, y,
-		u_, v_,
-		width_, height_,
-		gfx::rgb(255, 255, 255));
+	if (width_ == 8 && height_ == 8)
+		gfx.add_sprite_8x8(x, y, u_, v_, gfx::rgb(255, 255, 255));
+	else if (width_ == 16 && height_ == 16)
+		gfx.add_sprite_16x16(x, y, u_, v_, gfx::rgb(255, 255, 255));
+	else
+		gfx.add_sprite(x, y, u_, v_, width_, height_, gfx::rgb(255, 255, 255));
 }
 
 sprite_atlas::sprite_atlas(const char *name)
