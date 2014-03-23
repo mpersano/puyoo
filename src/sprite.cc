@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "common.h"
+#include "file_reader.h"
 #include "sprite.h"
 
 void
@@ -11,66 +12,6 @@ sprite::draw(gfx::context& gfx, int x, int y) const
 		u_, v_,
 		width_, height_,
 		gfx::rgb(255, 255, 255));
-}
-
-class file_reader
-{
-public:
-	file_reader(const char *path);
-	virtual ~file_reader();
-
-	uint8_t read_uint8();
-	uint16_t read_uint16();
-	uint32_t read_uint32();
-	char *read_string();
-
-private:
-	FILE *fd_;;
-};
-
-file_reader::file_reader(const char *path)
-: fd_(fopen(path, "rb"))
-{ }
-
-file_reader::~file_reader()
-{
-	fclose(fd_);
-}
-
-uint8_t
-file_reader::read_uint8()
-{
-	uint8_t value;
-	fread(&value, 1, 1, fd_);
-	return value;
-}
-
-uint16_t
-file_reader::read_uint16()
-{
-	uint16_t lo = static_cast<uint16_t>(read_uint8());
-	uint16_t hi = static_cast<uint16_t>(read_uint8());
-	return lo | (hi << 8);
-}
-
-uint32_t
-file_reader::read_uint32()
-{
-	uint32_t lo = static_cast<uint32_t>(read_uint16());
-	uint32_t hi = static_cast<uint32_t>(read_uint16());
-	return lo | (hi << 16);
-}
-
-char *
-file_reader::read_string()
-{
-	uint8_t len = read_uint8();
-
-	char *str = new char[len + 1];
-	fread(str, 1, len, fd_);
-	str[len] = '\0';
-
-	return str;
 }
 
 sprite_atlas::sprite_atlas(const char *name)

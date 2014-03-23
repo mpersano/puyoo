@@ -29,6 +29,7 @@ OBJS = \
 	$(OBJ)/grid.o \
 	$(OBJ)/image.o \
 	$(OBJ)/sprite.o \
+	$(OBJ)/file_reader.o
 
 include $(SRC)/platform/$(PLATFORM)/$(PLATFORM).mk
 

@@ -1,7 +1,6 @@
-extern "C" {
 #include <stdio.h>
-}
 
+#include "file_reader.h"
 #include "image.h"
 
 enum {
@@ -34,18 +33,10 @@ struct tga_header {
 image *
 image::load_from_tga(const char *path)
 {
-	FILE *in;
-printf("reading %s\n", path);
-	
-	if ((in = fopen(path, "rb")) == 0)
-		return 0;
+	file_reader reader(path);
 
 	tga_header header;
-
-	if (fread(&header, sizeof(header), 1, in) != 1) {
-		fclose(in);
-		return 0;
-	}
+	reader.read(&header, sizeof(header));
 
 	const bool flipped = (header.image_spec.image_descriptor & 0x20) == 0;
 
@@ -55,24 +46,15 @@ printf("reading %s\n", path);
 		header.image_type,
 		flipped);
 
-	if (header.image_type != TGA_UNCOMPRESSED_TRUECOLOR || header.image_spec.pixel_depth != 32) {
-		fclose(in);
+	if (header.image_type != TGA_UNCOMPRESSED_TRUECOLOR || header.image_spec.pixel_depth != 32)
 		return 0;
-	}
 
 	image *img = new image(header.image_spec.width, header.image_spec.height);
 
 	for (size_t i = 0; i < img->height_; i++) {
 		uint32_t *dest = &img->data_[(flipped ? img->height_ - 1 - i : i)*img->width_];
-
-		if (fread(dest, sizeof(uint32_t), img->width_, in) != img->width_) {
-			delete img;
-			fclose(in);
-			return 0;
-		}
+		reader.read(dest, img->width_*sizeof *dest);
 	}
-
-	fclose(in);
 
 	return img;
 }
