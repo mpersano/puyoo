@@ -5,7 +5,7 @@
 #include "texture.h"
 #include "gfx_context.h"
 
-class font_draw_strategy;
+class font_renderer;
 
 class font
 {
@@ -23,7 +23,7 @@ public:
 protected:
 	gfx::texture *texture_;
 	glyph *glyph_map_[256];
-	font_draw_strategy *draw_strategy_;
+	font_renderer *renderer_;
 };
 
 class font_manager
