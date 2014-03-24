@@ -523,14 +523,22 @@ grid::draw_dropping_jama(gfx::context& gfx) const
 	int x = base_x_;
 
 	for (int i = 0; i < GRID_COLS; i++) {
-		if (dropping_jama_[i]) {
+		int num_jama = dropping_jama_[i];
+
+		if (num_jama) {
 			int height = base_y_ + GRID_ROWS*BLOCK_SIZE - (get_col_height(i) + dropping_jama_[i])*BLOCK_SIZE;
 
-			int y = base_y_ - dropping_jama_[i]*BLOCK_SIZE + DROPPING_JAMA_SPEED*state_tics_;
+			int y = base_y_ - num_jama*BLOCK_SIZE + DROPPING_JAMA_SPEED*state_tics_;
 			if (y > height)
 				y = height;
 
-			for (int j = 0; j < dropping_jama_[i]; j++) {
+			if (y <= base_y_ - BLOCK_SIZE) {
+				int n = (base_y_ - y)/BLOCK_SIZE;
+				y += n*BLOCK_SIZE;
+				num_jama -= n;
+			}
+
+			for (int j = 0; j < num_jama; j++) {
 				jama_sprite->draw(gfx, x, y);
 				y += BLOCK_SIZE;
 			}
