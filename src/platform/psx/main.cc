@@ -1,14 +1,41 @@
 #include <psx.h>
 #include <stdio.h>
 
+#include "panic.h"
 #include "game.h"
 #include "common.h"
-
-extern "C" int printf(const char *fmt, ...);
 
 unsigned dpad_state;
 
 static volatile bool vblank = false;
+
+namespace gfx {
+
+int
+get_texture_page(int width, int height)
+{
+	static int last_page = 5;
+	return last_page += 16; // HACK!
+}
+
+}
+
+void
+panic(const char *fmt, ...)
+{
+	char buf[256];
+
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsprintf(buf, fmt, ap);
+	va_end(ap);
+
+	printf("panic: %s\n", buf);
+
+	for (;;)
+		;
+}
 
 const char *
 make_path(const char *name, const char *ext)

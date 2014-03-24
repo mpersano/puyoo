@@ -5,12 +5,14 @@
 
 namespace gfx {
 
+extern int get_texture_page(int width, int height);
+
 class psx_texture : public texture_base<psx_texture>
 {
 public:
 	psx_texture(image *img)
 	: texture_base<psx_texture>(img)
-	, page_(5)
+	, page_(get_texture_page(image_->width(), image_->height()))
 	{ }
 
 	void upload_to_vram() const
