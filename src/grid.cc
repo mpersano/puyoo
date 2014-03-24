@@ -88,11 +88,19 @@ block_draw(gfx::context& gfx, int type, int x, int y)
 		block_sprites[type - 1]->draw(gfx, x, y);
 }
 
+class control_strategy
+{
+public:
+	virtual ~control_strategy() { }
+
+	virtual bool update(falling_block *fb, const grid *g, unsigned dpad_state) = 0;
+};
+
 class falling_block
 {
 public:
-	falling_block();
-	virtual ~falling_block() { }
+	falling_block(bool player_control);
+	~falling_block();
 
 	void reset();
 	void draw(gfx::context& gfx, int base_x, int base_y) const;
@@ -100,14 +108,12 @@ public:
 	bool can_move(const grid *g, int dr, int dc) const;
 	void copy_to_grid(grid *g);
 
-protected:
 	bool move_left(const grid *g);
 	bool move_right(const grid *g);
 	bool move_down(const grid *g);
 	bool rotate(const grid *g);
 
-	virtual bool update_position(const grid *g, unsigned dpad_state) = 0;
-
+protected:
 	enum state {
 		STATE_PLAYER_CONTROL,
 		STATE_ROTATING,
@@ -124,23 +130,32 @@ protected:
 	int drop_tics_;
 	state state_;
 	int state_tics_;
+	control_strategy *control_strategy_;
 };
 
-class player_falling_block : public falling_block
+class player_control_strategy : public control_strategy
 {
-protected:
-	bool update_position(const grid *g, unsigned dpad_state);
+public:
+	bool update(falling_block *fb, const grid *g, unsigned dpad_state);
 };
 
-class computer_falling_block : public falling_block
+class computer_control_strategy : public control_strategy
 {
-protected:
-	bool update_position(const grid *g, unsigned dpad_state);
+public:
+	bool update(falling_block *fb, const grid *g, unsigned dpad_state);
 };
 
-falling_block::falling_block()
+falling_block::falling_block(bool player_control)
+: control_strategy_(
+	player_control ? static_cast<control_strategy *>(new player_control_strategy) :
+			 static_cast<control_strategy *>(new computer_control_strategy))
 {
 	reset();
+}
+
+falling_block::~falling_block()
+{
+	delete control_strategy_;
 }
 
 void
@@ -226,7 +241,7 @@ falling_block::update(const grid *g, unsigned dpad_state)
 {
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			if (!update_position(g, dpad_state))
+			if (!control_strategy_->update(this, g, dpad_state))
 				return false;
 
 			if (drop_tics_ > 0) {
@@ -334,49 +349,49 @@ falling_block::rotate(const grid *g)
 }
 
 bool
-player_falling_block::update_position(const grid *g, unsigned dpad_state)
+player_control_strategy::update(falling_block *fb, const grid *g, unsigned dpad_state)
 {
 	if (dpad_state & DPAD_LEFT) {
-		if (move_left(g))
+		if (fb->move_left(g))
 			return true;
 	}
 
 	if (dpad_state & DPAD_RIGHT) {
-		if (move_right(g))
+		if (fb->move_right(g))
 			return true;
 	}
 
 	if (dpad_state & DPAD_BUTTON) {
-		if (rotate(g))
+		if (fb->rotate(g))
 			return true;
 	}
 
 	if (dpad_state & DPAD_DOWN)
-		return move_down(g);
+		return fb->move_down(g);
 
 	return true;
 }
 
 bool
-computer_falling_block::update_position(const grid *g, unsigned dpad_state)
+computer_control_strategy::update(falling_block *fb, const grid *g, unsigned dpad_state)
 {
 	if ((rand() & 0x3f) == 0) {
-		if (move_left(g))
+		if (fb->move_left(g))
 			return true;
 	}
 
 	if ((rand() & 0x3f) == 0) {
-		if (move_right(g))
+		if (fb->move_right(g))
 			return true;
 	}
 
 	if ((rand() & 0x3f) == 0) {
-		if (rotate(g))
+		if (fb->rotate(g))
 			return true;
 	}
 
 	if ((rand() & 0x3f) == 0)
-		return move_down(g);
+		return fb->move_down(g);
 
 	return true;
 }
@@ -426,10 +441,7 @@ grid::initialize(int base_x, int base_y, bool human_control)
 	base_x_ = base_x;
 	base_y_ = base_y;
 
-	if (human_control)
-		falling_block_ = new player_falling_block;
-	else
-		falling_block_ = new computer_falling_block;
+	falling_block_ = new falling_block(human_control);
 
 	reset();
 }
