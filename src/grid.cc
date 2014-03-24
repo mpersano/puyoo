@@ -34,6 +34,8 @@ static const sprite *block_sprites[NUM_BLOCK_TYPES];
 static const sprite *explosion_sprites[NUM_EXPLOSION_FRAMES];
 static const sprite *jama_sprite;
 
+static const int offsets[FALLING_BLOCK_NUM_ROTATIONS][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
+
 static void
 initialize_block_sprites()
 {
@@ -86,28 +88,43 @@ block_draw(gfx::context& gfx, int type, int x, int y)
 		block_sprites[type - 1]->draw(gfx, x, y);
 }
 
-static const int offsets[FALLING_BLOCK_NUM_ROTATIONS][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
-
-int
-grid::get_block(int r, int c) const
+class falling_block
 {
-	return blocks_[r*GRID_COLS + c];
-}
+public:
+	falling_block();
 
-bool
-grid::is_empty(int r, int c) const
+	void reset();
+	void draw(gfx::context& gfx, int base_x, int base_y) const;
+	bool update(const grid *g, unsigned dpad_state);
+	bool can_move(const grid *g, int dr, int dc) const;
+	void copy_to_grid(grid *g);
+
+private:
+	enum state {
+		STATE_PLAYER_CONTROL,
+		STATE_ROTATING,
+		STATE_MOVING_LEFT,
+		STATE_MOVING_RIGHT,
+		STATE_DROPPING,
+		STATE_WAITING,
+	};
+
+	void set_state(state next_state);
+
+	int blocks_[2];
+	int row_, col_, rotation_;
+	int drop_tics_;
+	state state_;
+	int state_tics_;
+};
+
+falling_block::falling_block()
 {
-	return r >= 0 && r < GRID_ROWS && c >= 0 && c < GRID_COLS && get_block(r, c) == BLOCK_EMPTY;
+	reset();
 }
 
 void
-grid::set_block(int r, int c, int type)
-{
-	blocks_[r*GRID_COLS + c] = type;
-}
-
-void
-grid::falling_block::initialize()
+falling_block::reset()
 {
 	blocks_[0] = rand()%NUM_BLOCK_TYPES + 1;
 	blocks_[1] = rand()%NUM_BLOCK_TYPES + 1;
@@ -122,7 +139,7 @@ grid::falling_block::initialize()
 }
 
 void
-grid::falling_block::draw(gfx::context& gfx, int base_x, int base_y) const
+falling_block::draw(gfx::context& gfx, int base_x, int base_y) const
 {
 	const int xo = base_x + col_*BLOCK_SIZE;
 	const int yo = base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE;
@@ -177,7 +194,7 @@ grid::falling_block::draw(gfx::context& gfx, int base_x, int base_y) const
 }
 
 bool
-grid::falling_block::can_move(const grid *g, int dr, int dc) const
+falling_block::can_move(const grid *g, int dr, int dc) const
 {
 	return
 		g->is_empty(row_ + dr, col_ + dc) &&
@@ -185,7 +202,7 @@ grid::falling_block::can_move(const grid *g, int dr, int dc) const
 }
 
 bool
-grid::falling_block::update(const grid *g, unsigned dpad_state)
+falling_block::update(const grid *g, unsigned dpad_state)
 {
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
@@ -280,17 +297,35 @@ grid::falling_block::update(const grid *g, unsigned dpad_state)
 }
 
 void
-grid::falling_block::set_state(state next_state)
+falling_block::set_state(state next_state)
 {
 	state_ = next_state;
 	state_tics_ = 0;
 }
 
 void
-grid::falling_block::copy_to_grid(grid *g)
+falling_block::copy_to_grid(grid *g)
 {
 	g->set_block(row_, col_, blocks_[0]);
 	g->set_block(row_ + offsets[rotation_][0], col_ + offsets[rotation_][1], blocks_[1]);
+}
+
+int
+grid::get_block(int r, int c) const
+{
+	return blocks_[r*GRID_COLS + c];
+}
+
+bool
+grid::is_empty(int r, int c) const
+{
+	return r >= 0 && r < GRID_ROWS && c >= 0 && c < GRID_COLS && get_block(r, c) == BLOCK_EMPTY;
+}
+
+void
+grid::set_block(int r, int c, int type)
+{
+	blocks_[r*GRID_COLS + c] = type;
 }
 
 void
@@ -301,10 +336,12 @@ grid::set_state(state next_state)
 }
 
 void
-grid::initialize(int base_x, int base_y)
+grid::initialize(int base_x, int base_y, bool human_control)
 {
 	base_x_ = base_x;
 	base_y_ = base_y;
+
+	falling_block_ = new falling_block;
 
 	reset();
 }
@@ -317,7 +354,7 @@ grid::reset()
 	jama_to_drop_ = 9; // 0;
 
 	set_state(STATE_PLAYER_CONTROL);
-	falling_block_.initialize();
+	falling_block_->reset();
 }
 
 void
@@ -520,7 +557,7 @@ grid::draw(gfx::context& gfx) const
 
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			falling_block_.draw(gfx, base_x_, base_y_);
+			falling_block_->draw(gfx, base_x_, base_y_);
 			break;
 
 		case STATE_DROPPING_JAMA:
@@ -544,15 +581,15 @@ grid::update(unsigned dpad_state)
 			drop_jama();
 			set_state(STATE_DROPPING_JAMA);
 		} else {
-			falling_block_.initialize();
+			falling_block_->reset();
 			set_state(STATE_PLAYER_CONTROL);
 		}
 	};
 
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			if (!falling_block_.update(this, dpad_state)) {
-				falling_block_.copy_to_grid(this);
+			if (!falling_block_->update(this, dpad_state)) {
+				falling_block_->copy_to_grid(this);
 				on_drop();
 			}
 			break;

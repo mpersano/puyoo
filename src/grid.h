@@ -23,10 +23,12 @@ enum block_type {
 	NUM_BLOCK_TYPES = BLOCK_YELLOW - BLOCK_CYAN + 1,
 };
 
+class falling_block;
+
 class grid
 {
 public:
-	void initialize(int base_x, int base_y);
+	void initialize(int base_x, int base_y, bool human_control);
 
 	void reset();
 	void update(unsigned dpad_state);
@@ -65,36 +67,7 @@ private:
 
 	void set_state(state next_state);
 
-	class falling_block
-	{
-	public:
-		void initialize();
-	
-		void draw(gfx::context& gfx, int base_x, int base_y) const;
-		bool update(const grid *g, unsigned dpad_state);
-		bool can_move(const grid *g, int dr, int dc) const;
-		void copy_to_grid(grid *g);
-	
-	private:
-		enum state {
-			STATE_PLAYER_CONTROL,
-			STATE_ROTATING,
-			STATE_MOVING_LEFT,
-			STATE_MOVING_RIGHT,
-			STATE_DROPPING,
-			STATE_WAITING,
-		};
-
-		void set_state(state next_state);
-
-		int blocks_[2];
-		int row_, col_, rotation_;
-		int drop_tics_;
-		state state_;
-		int state_tics_;
-	};
-
-	falling_block falling_block_;
+	falling_block *falling_block_;
 
 	unsigned char blocks_[GRID_ROWS*GRID_COLS];
 	int base_x_, base_y_;
