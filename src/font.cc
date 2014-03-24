@@ -4,37 +4,32 @@
 #include "common.h"
 #include "font.h"
 
-class font_8x8 : public font
+class font_draw_strategy
 {
 public:
-	font_8x8(const char *texture_path);
-
-	void draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const;
-
-	size_t glyph_width() const
-	{ return 8; }
+	virtual void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const = 0;
 };
 
-class font_16x16 : public font
+class font_8x8_draw_strategy : public font_draw_strategy
 {
 public:
-	font_16x16(const char *texture_path);
-
-	void draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const;
-
-	size_t glyph_width() const
-	{ return 16; }
+	void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const;
 };
 
-class font_generic : public font
+class font_16x16_draw_strategy : public font_draw_strategy
 {
 public:
-	font_generic(const char *texture_path, size_t glyph_width, size_t glyph_height);
+	void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const;
+};
 
-	void draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const;
+class font_generic_draw_strategy : public font_draw_strategy
+{
+public:
+	font_generic_draw_strategy(size_t glyph_width, size_t glyph_height)
+	: glyph_width_(glyph_width), glyph_height_(glyph_height)
+	{ }
 
-	size_t glyph_width() const
-	{ return glyph_width_; }
+	void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const;
 
 private:
 	size_t glyph_width_, glyph_height_;
@@ -71,6 +66,13 @@ font::font(const char *texture_path, size_t glyph_width, size_t glyph_height)
 			v += glyph_height;
 		}
 	}
+
+	if (glyph_width == 8 && glyph_height == 8)
+		draw_strategy_ = new font_8x8_draw_strategy;
+	else if (glyph_width == 16 && glyph_height == 16)
+		draw_strategy_ = new font_16x16_draw_strategy;
+	else
+		draw_strategy_ = new font_generic_draw_strategy(glyph_width, glyph_height);
 }
 
 font::~font()
@@ -90,45 +92,37 @@ font::draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const
 	va_end(ap);
 
 	gfx.bind_texture(texture_);
+	(*draw_strategy_)(gfx, glyph_map_, x, y, buf);
+}
 
-	for (const char *p = buf; *p; p++) {
-		const glyph *g = glyph_map_[static_cast<int>(*p)];
-		if (g)
-			draw_glyph(gfx, x, y, g);
-		x += glyph_width();
+void
+font_8x8_draw_strategy::operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const
+{
+	for (const char *p = str; *p; p++) {
+		const font::glyph *g = glyphs[static_cast<int>(*p)];
+		gfx.add_sprite_8x8(x, y, g->u_, g->v_, gfx::rgb(255, 255, 255));
+		x += 8;
 	}
 }
 
-font_8x8::font_8x8(const char *texture_path)
-: font(texture_path, 8, 8)
-{ }
-
 void
-font_8x8::draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const
+font_16x16_draw_strategy::operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const
 {
-	gfx.add_sprite_8x8(x, y, g->u_, g->v_, gfx::rgb(255, 255, 255));
+	for (const char *p = str; *p; p++) {
+		const font::glyph *g = glyphs[static_cast<int>(*p)];
+		gfx.add_sprite_16x16(x, y, g->u_, g->v_, gfx::rgb(255, 255, 255));
+		x += 16;
+	}
 }
 
-font_16x16::font_16x16(const char *texture_path)
-: font(texture_path, 16, 16)
-{ }
-
 void
-font_16x16::draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const
+font_generic_draw_strategy::operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const
 {
-	gfx.add_sprite_16x16(x, y, g->u_, g->v_, gfx::rgb(255, 255, 255));
-}
-
-font_generic::font_generic(const char *texture_path, size_t glyph_width, size_t glyph_height)
-: font(texture_path, glyph_width, glyph_height)
-, glyph_width_(glyph_width)
-, glyph_height_(glyph_height)
-{ }
-
-void
-font_generic::draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const
-{
-	gfx.add_sprite(x, y, g->u_, g->v_, glyph_width_, glyph_height_, gfx::rgb(255, 255, 255));
+	for (const char *p = str; *p; p++) {
+		const font::glyph *g = glyphs[static_cast<int>(*p)];
+		gfx.add_sprite(x, y, g->u_, g->v_, glyph_width_, glyph_height_, gfx::rgb(255, 255, 255));
+		x += glyph_width_;
+	}
 }
 
 font_manager&
@@ -147,7 +141,7 @@ font_manager::get(const char *name)
 	font *p = dict_.get(name);
 
 	if (!p) {
-		p = new font_8x8(make_path(name, "TGA"));
+		p = new font(make_path(name, "TGA"), 8, 8);
 		dict_.put(name, p);
 	}
 

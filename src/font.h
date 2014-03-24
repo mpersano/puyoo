@@ -5,6 +5,8 @@
 #include "texture.h"
 #include "gfx_context.h"
 
+class font_draw_strategy;
+
 class font
 {
 public:
@@ -18,13 +20,10 @@ public:
 		int u_, v_;
 	};
 
-	virtual void draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const = 0;
-
-	virtual size_t glyph_width() const = 0;
-
 protected:
 	gfx::texture *texture_;
 	glyph *glyph_map_[256];
+	font_draw_strategy *draw_strategy_;
 };
 
 class font_manager
