@@ -7,29 +7,48 @@
 class font_draw_strategy
 {
 public:
-	virtual void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const = 0;
+	font_draw_strategy(const font::glyph *const *glyphs)
+	: glyphs_(glyphs)
+	{ }
+
+	virtual ~font_draw_strategy() { }
+
+	virtual void operator()(gfx::context& gfx, int x, int y, const char *str) const = 0;
+
+protected:
+	const font::glyph *const *glyphs_;
 };
 
 class font_8x8_draw_strategy : public font_draw_strategy
 {
 public:
-	void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const;
+	font_8x8_draw_strategy(const font::glyph *const *glyphs)
+	: font_draw_strategy(glyphs)
+	{ }
+
+	void operator()(gfx::context& gfx, int x, int y, const char *str) const;
 };
 
 class font_16x16_draw_strategy : public font_draw_strategy
 {
 public:
-	void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const;
+	font_16x16_draw_strategy(const font::glyph *const *glyphs)
+	: font_draw_strategy(glyphs)
+	{ }
+
+	void operator()(gfx::context& gfx, int x, int y, const char *str) const;
 };
 
 class font_generic_draw_strategy : public font_draw_strategy
 {
 public:
-	font_generic_draw_strategy(size_t glyph_width, size_t glyph_height)
-	: glyph_width_(glyph_width), glyph_height_(glyph_height)
+	font_generic_draw_strategy(const font::glyph *const *glyphs, size_t glyph_width, size_t glyph_height)
+	: font_draw_strategy(glyphs)
+	, glyph_width_(glyph_width)
+	, glyph_height_(glyph_height)
 	{ }
 
-	void operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const;
+	void operator()(gfx::context& gfx, int x, int y, const char *str) const;
 
 private:
 	size_t glyph_width_, glyph_height_;
@@ -68,11 +87,11 @@ font::font(const char *texture_path, size_t glyph_width, size_t glyph_height)
 	}
 
 	if (glyph_width == 8 && glyph_height == 8)
-		draw_strategy_ = new font_8x8_draw_strategy;
+		draw_strategy_ = new font_8x8_draw_strategy(glyph_map_);
 	else if (glyph_width == 16 && glyph_height == 16)
-		draw_strategy_ = new font_16x16_draw_strategy;
+		draw_strategy_ = new font_16x16_draw_strategy(glyph_map_);
 	else
-		draw_strategy_ = new font_generic_draw_strategy(glyph_width, glyph_height);
+		draw_strategy_ = new font_generic_draw_strategy(glyph_map_, glyph_width, glyph_height);
 }
 
 font::~font()
@@ -92,34 +111,34 @@ font::draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const
 	va_end(ap);
 
 	gfx.bind_texture(texture_);
-	(*draw_strategy_)(gfx, glyph_map_, x, y, buf);
+	(*draw_strategy_)(gfx, x, y, buf);
 }
 
 void
-font_8x8_draw_strategy::operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const
+font_8x8_draw_strategy::operator()(gfx::context& gfx, int x, int y, const char *str) const
 {
 	for (const char *p = str; *p; p++) {
-		const font::glyph *g = glyphs[static_cast<int>(*p)];
+		const font::glyph *g = glyphs_[static_cast<int>(*p)];
 		gfx.add_sprite_8x8(x, y, g->u_, g->v_, gfx::rgb(255, 255, 255));
 		x += 8;
 	}
 }
 
 void
-font_16x16_draw_strategy::operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const
+font_16x16_draw_strategy::operator()(gfx::context& gfx, int x, int y, const char *str) const
 {
 	for (const char *p = str; *p; p++) {
-		const font::glyph *g = glyphs[static_cast<int>(*p)];
+		const font::glyph *g = glyphs_[static_cast<int>(*p)];
 		gfx.add_sprite_16x16(x, y, g->u_, g->v_, gfx::rgb(255, 255, 255));
 		x += 16;
 	}
 }
 
 void
-font_generic_draw_strategy::operator()(gfx::context& gfx, const font::glyph *const *glyphs, int x, int y, const char *str) const
+font_generic_draw_strategy::operator()(gfx::context& gfx, int x, int y, const char *str) const
 {
 	for (const char *p = str; *p; p++) {
-		const font::glyph *g = glyphs[static_cast<int>(*p)];
+		const font::glyph *g = glyphs_[static_cast<int>(*p)];
 		gfx.add_sprite(x, y, g->u_, g->v_, glyph_width_, glyph_height_, gfx::rgb(255, 255, 255));
 		x += glyph_width_;
 	}
