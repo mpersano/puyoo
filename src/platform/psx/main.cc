@@ -15,7 +15,11 @@ int
 get_texture_page(int width, int height)
 {
 	static int last_page = 5;
-	return last_page += 16; // HACK!
+
+	int page = last_page;
+	last_page += (width + 63)/64;
+
+	return page;
 }
 
 }
