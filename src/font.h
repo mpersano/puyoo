@@ -13,16 +13,18 @@ public:
 
 	void draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const;
 
-private:
-	gfx::texture *texture_;
-	size_t glyph_width_, glyph_height_;
-
 	struct glyph {
-		bool valid_;
+		glyph(int u, int v) : u_(u), v_(v) { }
 		int u_, v_;
 	};
 
-	glyph glyph_map_[256];
+	virtual void draw_glyph(gfx::context& gfx, int x, int y, const glyph *g) const = 0;
+
+	virtual size_t glyph_width() const = 0;
+
+protected:
+	gfx::texture *texture_;
+	glyph *glyph_map_[256];
 };
 
 class font_manager
