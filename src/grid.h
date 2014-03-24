@@ -82,6 +82,7 @@ private:
 			STATE_MOVING_LEFT,
 			STATE_MOVING_RIGHT,
 			STATE_DROPPING,
+			STATE_WAITING,
 		};
 
 		void set_state(state next_state);

@@ -20,6 +20,7 @@ enum {
 	FALLING_BLOCK_NUM_ROTATIONS = 4,
 
 	FALLING_BLOCK_ANIMATION_TICS = 4,
+	FALLING_BLOCK_WAIT_TICS = 2,
 	FALLING_BLOCK_ROTATION_TICS = 8,
 
 	DROPPING_JAMA_SPEED = 5,
@@ -239,15 +240,20 @@ grid::falling_block::update(const grid *g, unsigned dpad_state)
 		case STATE_MOVING_LEFT:
 			if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
 				--col_;
-				set_state(STATE_PLAYER_CONTROL);
+				set_state(STATE_WAITING);
 			}
 			return true;
 
 		case STATE_MOVING_RIGHT:
 			if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
 				++col_;
-				set_state(STATE_PLAYER_CONTROL);
+				set_state(STATE_WAITING);
 			}
+			return true;
+
+		case STATE_WAITING:
+			if (++state_tics_ == FALLING_BLOCK_WAIT_TICS)
+				set_state(STATE_PLAYER_CONTROL);
 			return true;
 
 		case STATE_DROPPING:
