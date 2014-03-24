@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#include <assert.h>
+
 #include "common.h"
 #include "texture.h"
 #include "sprite.h"
@@ -18,6 +20,8 @@ enum {
 	FALLING_BLOCK_NUM_ROTATIONS = 4,
 	FALLING_BLOCK_ROTATION_TICS = 8,
 
+	DROPPING_JAMA_SPEED = 5,
+
 	NUM_EXPLOSION_FRAMES = 4,
 };
 
@@ -25,6 +29,7 @@ static const sprite_atlas *sprites;
 
 static const sprite *block_sprites[NUM_BLOCK_TYPES];
 static const sprite *explosion_sprites[NUM_EXPLOSION_FRAMES];
+static const sprite *jama_sprite;
 
 static void
 initialize_block_sprites()
@@ -54,6 +59,12 @@ initialize_explosion_sprites()
 	}
 }
 
+static void
+initialize_jama_sprite()
+{
+	jama_sprite = sprites->get_sprite("jama.png");
+}
+
 void
 grid_load_sprites()
 {
@@ -62,6 +73,7 @@ grid_load_sprites()
 
 	initialize_block_sprites();
 	initialize_explosion_sprites();
+	initialize_jama_sprite();
 }
 
 static void
@@ -246,7 +258,15 @@ grid::initialize(int base_x, int base_y)
 	base_x_ = base_x;
 	base_y_ = base_y;
 
+	reset();
+}
+
+void
+grid::reset()
+{
 	memset(blocks_, 0, sizeof(blocks_));
+
+	jama_to_drop_ = 9; // 0;
 
 	set_state(STATE_PLAYER_CONTROL);
 	falling_block_.initialize();
@@ -270,17 +290,63 @@ grid::draw_blocks(gfx::context& gfx) const
 		int y = base_y_ + (GRID_ROWS - 1)*BLOCK_SIZE;
 
 		for (const unsigned char *p = &blocks_[c]; p < &blocks_[GRID_ROWS*GRID_COLS]; p += GRID_COLS) {
-			if (*p == BLOCK_EMPTY) {
-				hanging = true;
-			} else if (*p == BLOCK_EXPLODING) {
-				// assert(state_ == STATE_EXPLODING_BLOCKS);
-				const int frame = (state_tics_*NUM_EXPLOSION_FRAMES)/EXPLODING_BLOCK_TICS;
-				explosion_sprites[frame]->draw(gfx, x, y);
-			} else {
-				block_draw(gfx, *p, x, hanging ? y + y_offset : y);
+			switch (*p) {
+				case BLOCK_EMPTY:
+					hanging = true;
+					break;
+
+				case BLOCK_EXPLODING:
+					{
+					assert(state_ == STATE_EXPLODING_BLOCKS);
+					const int frame = (state_tics_*NUM_EXPLOSION_FRAMES)/EXPLODING_BLOCK_TICS;
+					explosion_sprites[frame]->draw(gfx, x, y);
+					}
+					break;
+
+				case BLOCK_JAMA:
+					jama_sprite->draw(gfx, x, y);
+					break;
+
+				default:
+					block_draw(gfx, *p, x, hanging ? y + y_offset : y);
+					break;
 			}
 
 			y -= BLOCK_SIZE;
+		}
+
+		x += BLOCK_SIZE;
+	}
+}
+
+int
+grid::get_col_height(int c) const
+{
+	int h = 0;
+
+	while (h < GRID_ROWS && blocks_[c + h*GRID_COLS] != BLOCK_EMPTY)
+		++h;
+
+	return h;
+}
+
+void
+grid::draw_dropping_jama(gfx::context& gfx) const
+{
+	int x = base_x_;
+
+	for (int i = 0; i < GRID_COLS; i++) {
+		if (dropping_jama_[i]) {
+			int height = base_y_ + GRID_ROWS*BLOCK_SIZE - (get_col_height(i) + dropping_jama_[i])*BLOCK_SIZE;
+
+			int y = base_y_ - dropping_jama_[i]*BLOCK_SIZE + DROPPING_JAMA_SPEED*state_tics_;
+			if (y > height)
+				y = height;
+
+			for (int j = 0; j < dropping_jama_[i]; j++) {
+				jama_sprite->draw(gfx, x, y);
+				y += BLOCK_SIZE;
+			}
 		}
 
 		x += BLOCK_SIZE;
@@ -296,13 +362,18 @@ grid::draw_background(gfx::context& gfx) const
 void
 grid::chain_explode(int r, int c, int type)
 {
-	if (r >= 0 && r < GRID_ROWS && c >= 0 && c < GRID_COLS && get_block(r, c) == type) {
-		set_block(r, c, BLOCK_EXPLODING);
+	if (r >= 0 && r < GRID_ROWS && c >= 0 && c < GRID_COLS) {
+		int b = get_block(r, c);
 
-		chain_explode(r - 1, c, type);
-		chain_explode(r + 1, c, type);
-		chain_explode(r, c - 1, type);
-		chain_explode(r, c + 1, type);
+		if (b == type || b == BLOCK_JAMA)
+			set_block(r, c, BLOCK_EXPLODING);
+
+		if (b == type) {
+			chain_explode(r - 1, c, type);
+			chain_explode(r + 1, c, type);
+			chain_explode(r, c - 1, type);
+			chain_explode(r, c + 1, type);
+		}
 	}
 }
 
@@ -346,7 +417,7 @@ grid::find_chains()
 
 		int type = blocks_[i];
 
-		if (type != BLOCK_EMPTY) {
+		if (type != BLOCK_EMPTY && type != BLOCK_JAMA) {
 			const int r = i/GRID_COLS;
 			const int c = i%GRID_COLS;
 
@@ -404,6 +475,10 @@ grid::draw(gfx::context& gfx) const
 			falling_block_.draw(gfx, base_x_, base_y_);
 			break;
 
+		case STATE_DROPPING_JAMA:
+			draw_dropping_jama(gfx);
+			break;
+
 		default:
 			break;
 	}
@@ -417,9 +492,12 @@ grid::update(unsigned dpad_state)
 			set_state(STATE_DROPPING_BLOCKS);
 		} else if (find_chains()) {
 			set_state(STATE_EXPLODING_BLOCKS);
+		} else if (jama_to_drop_) {
+			drop_jama();
+			set_state(STATE_DROPPING_JAMA);
 		} else {
-			set_state(STATE_PLAYER_CONTROL);
 			falling_block_.initialize();
+			set_state(STATE_PLAYER_CONTROL);
 		}
 	};
 
@@ -445,7 +523,59 @@ grid::update(unsigned dpad_state)
 			}
 			break;
 
+		case STATE_DROPPING_JAMA:
+			if (++state_tics_ == jama_drop_tics_) {
+				copy_jama_to_grid();
+				on_drop();
+			}
+			break;
+
 		default:
 			break;
+	}
+}
+
+void
+grid::add_jama(int num_jama)
+{
+	jama_to_drop_++;
+}
+
+void
+grid::drop_jama()
+{
+	memset(dropping_jama_, 0, sizeof(dropping_jama_));
+
+	jama_drop_tics_ = 0;
+
+	for (int i = 0; i < jama_to_drop_; i++) {
+		// XXX: check height
+		dropping_jama_[rand()%GRID_COLS]++;
+	}
+
+	for (int i = 0; i < GRID_COLS; i++) {
+		int height = base_y_ + GRID_ROWS*BLOCK_SIZE - (get_col_height(i) + dropping_jama_[i])*BLOCK_SIZE;
+		int tics = height/DROPPING_JAMA_SPEED;
+
+		if (tics > jama_drop_tics_)
+			jama_drop_tics_ = tics;
+	}
+
+	jama_to_drop_ = 0;
+}
+
+void
+grid::copy_jama_to_grid()
+{
+	for (int i = 0; i < GRID_COLS; i++) {
+		int r = get_col_height(i);
+
+		for (int j = 0; j < dropping_jama_[i]; j++) {
+			if (j + r >= GRID_ROWS) // XXX: shouldn't need this
+				break;
+
+			assert(blocks_[(j + r)*GRID_COLS + i] == BLOCK_EMPTY);
+			blocks_[(j + r)*GRID_COLS + i] = BLOCK_JAMA;
+		}
 	}
 }
