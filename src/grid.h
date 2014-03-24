@@ -28,7 +28,7 @@ class falling_block;
 class grid
 {
 public:
-	void initialize(int base_x, int base_y, bool human_control);
+	void initialize(int base_x, int base_y, grid *opponent, bool human_control);
 
 	void reset();
 	void update(unsigned dpad_state);
@@ -69,13 +69,14 @@ private:
 	void set_state(state next_state);
 
 	falling_block *falling_block_;
-
 	unsigned char blocks_[GRID_ROWS*GRID_COLS];
 	int base_x_, base_y_;
 	state state_;
 	int state_tics_;
 	int jama_to_drop_, jama_drop_tics_;
 	int dropping_jama_[GRID_COLS];
+	int combo_size_;
+	grid *opponent_;
 };
 
 void

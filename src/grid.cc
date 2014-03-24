@@ -438,10 +438,12 @@ grid::set_state(state next_state)
 }
 
 void
-grid::initialize(int base_x, int base_y, bool human_control)
+grid::initialize(int base_x, int base_y, grid *opponent, bool human_control)
 {
 	base_x_ = base_x;
 	base_y_ = base_y;
+
+	opponent_ = opponent;
 
 	falling_block_ = new falling_block(human_control);
 
@@ -453,9 +455,10 @@ grid::reset()
 {
 	memset(blocks_, 0, sizeof(blocks_));
 
-	jama_to_drop_ = 9; // 0;
+	jama_to_drop_ = combo_size_ = 0;
 
 	set_state(STATE_PLAYER_CONTROL);
+
 	falling_block_->reset();
 }
 
@@ -624,6 +627,7 @@ grid::find_chains()
 			int chain_size = find_chain_size(visited, r, c, type);
 
 			if (chain_size >= MIN_CHAIN_SIZE) {
+				combo_size_ += 1 + chain_size - MIN_CHAIN_SIZE;
 				chain_explode(r, c, type);
 				found = true;
 			}
@@ -698,7 +702,9 @@ grid::update(unsigned dpad_state)
 			drop_jama();
 			set_state(STATE_DROPPING_JAMA);
 		} else {
+			opponent_->add_jama(combo_size_);
 			falling_block_->reset();
+			combo_size_ = 0;
 			set_state(STATE_PLAYER_CONTROL);
 		}
 	};
@@ -740,7 +746,7 @@ grid::update(unsigned dpad_state)
 void
 grid::add_jama(int num_jama)
 {
-	jama_to_drop_++;
+	jama_to_drop_ += num_jama;
 }
 
 void
