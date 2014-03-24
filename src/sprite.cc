@@ -61,9 +61,9 @@ private:
 };
 
 sprite_atlas::sprite_atlas(const char *name)
+: texture_(gfx::texture::load_from_tga(make_path(name, "TGA")))
 {
-	texture_ = gfx::texture::load_from_tga(make_path(name, "TGA"));
-	// XXX: error checking
+	texture_->upload_to_vram();
 
 	file_reader reader(make_path(name, "SPR"));
 

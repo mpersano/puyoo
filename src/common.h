@@ -17,6 +17,8 @@ enum dpad_bits {
 extern unsigned dpad_state;
 
 extern const char *make_path(const char *name, const char *ext);
-extern void panic(const char *msg);
+
+class font;
+extern font *medium_font;
 
 #endif /* COMMON_H_ */

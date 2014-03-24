@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 
 #include <SDL.h>
 #include <GL/gl.h>
 
+#include "panic.h"
 #include "common.h"
 #include "game.h"
 
@@ -14,6 +16,22 @@ enum {
 static bool running = false;
 
 unsigned dpad_state;
+
+void
+panic(const char *fmt, ...)
+{
+	fprintf(stderr, "panic: ");
+
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+
+	fputc('\n', stderr);
+
+	exit(EXIT_FAILURE);
+}
 
 const char *
 make_path(const char *name, const char *ext)

@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "panic.h"
 #include "file_reader.h"
 #include "image.h"
 
@@ -46,8 +47,10 @@ image::load_from_tga(const char *path)
 		header.image_type,
 		flipped);
 
-	if (header.image_type != TGA_UNCOMPRESSED_TRUECOLOR || header.image_spec.pixel_depth != 32)
+	if (header.image_type != TGA_UNCOMPRESSED_TRUECOLOR || header.image_spec.pixel_depth != 32) {
+		panic("invalid type or pixel depth");
 		return 0;
+	}
 
 	image *img = new image(header.image_spec.width, header.image_spec.height);
 

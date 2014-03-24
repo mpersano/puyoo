@@ -3,6 +3,7 @@
 
 #include <string.h>
 
+#include "panic.h"
 #include "file_reader.h"
 
 template <typename T>
@@ -13,6 +14,9 @@ file_reader::file_reader(const char *path)
 : fd_(::open(path, O_RDONLY))
 , block_index_(0)
 {
+	if (fd_ == -1)
+		panic("failed to open `%s'", path);
+
 	read_block();
 }
 

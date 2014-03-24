@@ -44,6 +44,7 @@ private:
 	void draw_blocks(gfx::context& gfx) const;
 	void draw_dropping_jama(gfx::context& gfx) const;
 	void draw_background(gfx::context& gfx) const;
+	void draw_hud(gfx::context& gfx) const;
 
 	void chain_explode(int r, int c, int type);
 	void clear_exploding_blocks();
@@ -78,6 +79,6 @@ private:
 };
 
 void
-grid_load_sprites();
+grid_init_resources();
 
 #endif /* GRID_H_ */
