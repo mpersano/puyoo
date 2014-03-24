@@ -602,7 +602,7 @@ grid::find_chains()
 
 		int type = blocks_[i];
 
-		if (type != BLOCK_EMPTY && type != BLOCK_JAMA) {
+		if (type != BLOCK_EMPTY && type != BLOCK_JAMA && type != BLOCK_EXPLODING) {
 			const int r = i/GRID_COLS;
 			const int c = i%GRID_COLS;
 
