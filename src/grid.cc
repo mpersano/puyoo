@@ -186,89 +186,91 @@ grid::falling_block::can_move(const grid *g, int dr, int dc) const
 bool
 grid::falling_block::update(const grid *g, unsigned dpad_state)
 {
-	if (state_ == STATE_PLAYER_CONTROL) {
-		if (dpad_state & DPAD_LEFT) {
-			if (can_move(g, 0, -1)) {
-				set_state(STATE_MOVING_LEFT);
-				return true;
+	switch (state_) {
+		case STATE_PLAYER_CONTROL:
+			if (dpad_state & DPAD_LEFT) {
+				if (can_move(g, 0, -1)) {
+					set_state(STATE_MOVING_LEFT);
+					return true;
+				}
 			}
-		}
 
-		if (dpad_state & DPAD_RIGHT) {
-			if (can_move(g, 0, 1)) {
-				set_state(STATE_MOVING_RIGHT);
-				return true;
+			if (dpad_state & DPAD_RIGHT) {
+				if (can_move(g, 0, 1)) {
+					set_state(STATE_MOVING_RIGHT);
+					return true;
+				}
 			}
-		}
 
-		if (dpad_state & DPAD_DOWN) {
-			if (can_move(g, -1, 0)) {
-				set_state(STATE_DROPPING);
-				return true;
+			if (dpad_state & DPAD_DOWN) {
+				if (can_move(g, -1, 0)) {
+					set_state(STATE_DROPPING);
+					return true;
+				} else {
+					return false;
+				}
+			}
+
+			if (dpad_state & DPAD_BUTTON) {
+				int next_rotation = rotation_ + 1;
+				if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
+					next_rotation = 0;
+
+				if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1])) {
+					set_state(STATE_ROTATING);
+					return true;
+				}
+			}
+
+			if (drop_tics_ > 0) {
+				--drop_tics_;
 			} else {
-				return false;
+				if (can_move(g, -1, 0)) {
+					set_state(STATE_DROPPING);
+					return true;
+				} else {
+					/* can't drop */
+					return false;
+				}
 			}
-		}
 
-		if (dpad_state & DPAD_BUTTON) {
-			int next_rotation = rotation_ + 1;
-			if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
-				next_rotation = 0;
+			return true;
 
-			if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1])) {
-				set_state(STATE_ROTATING);
-				return true;
+		case STATE_MOVING_LEFT:
+			if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
+				--col_;
+				set_state(STATE_PLAYER_CONTROL);
 			}
-		}
+			return true;
 
-		if (drop_tics_ > 0) {
-			--drop_tics_;
-		} else {
-			if (can_move(g, -1, 0)) {
-				set_state(STATE_DROPPING);
-				return true;
-			} else {
-				/* can't drop */
-				return false;
+		case STATE_MOVING_RIGHT:
+			if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
+				++col_;
+				set_state(STATE_PLAYER_CONTROL);
 			}
-		}
+			return true;
 
-		return true;
-	} else if (state_ == STATE_MOVING_LEFT) {
-		if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
-			--col_;
-			set_state(STATE_PLAYER_CONTROL);
-		}
+		case STATE_DROPPING:
+			if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
+				--row_;
+				drop_tics_ = FALLING_BLOCK_DROP_INTERVAL;
+				set_state(STATE_PLAYER_CONTROL);
+			}
+			return true;
 
-		return true;
-	} else if (state_ == STATE_MOVING_RIGHT) {
-		if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
-			++col_;
-			set_state(STATE_PLAYER_CONTROL);
-		}
+		case STATE_ROTATING:
+			if (++state_tics_ == FALLING_BLOCK_ROTATION_TICS) {
+				if (++rotation_ == FALLING_BLOCK_NUM_ROTATIONS)
+					rotation_ = 0;
 
-		return true;
-	} else if (state_ == STATE_DROPPING) {
-		if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
-			--row_;
-			drop_tics_ = FALLING_BLOCK_DROP_INTERVAL;
-			set_state(STATE_PLAYER_CONTROL);
-		}
+				set_state(STATE_PLAYER_CONTROL);
+			}
+			return true;
 
-		return true;
-	} else if (state_ == STATE_ROTATING) {
-		if (++state_tics_ == FALLING_BLOCK_ROTATION_TICS) {
-			if (++rotation_ == FALLING_BLOCK_NUM_ROTATIONS)
-				rotation_ = 0;
-
-			set_state(STATE_PLAYER_CONTROL);
-		}
-
-		return true;
+		default:
+			// NOTREACHED (?)
+			return false;
 	}
-
-	// NOTREACHED (?)
-	return false;
 }
 
 void
