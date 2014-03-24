@@ -2,8 +2,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#include <assert.h>
-
 #include "common.h"
 #include "texture.h"
 #include "sprite.h"
@@ -484,7 +482,6 @@ grid::draw_blocks(gfx::context& gfx) const
 
 				case BLOCK_EXPLODING:
 					{
-					assert(state_ == STATE_EXPLODING_BLOCKS);
 					const int frame = (state_tics_*NUM_EXPLOSION_FRAMES)/EXPLODING_BLOCK_TICS;
 					explosion_sprites[frame]->draw(gfx, x, y);
 					}
@@ -769,7 +766,6 @@ grid::copy_jama_to_grid()
 			if (j + r >= GRID_ROWS) // XXX: shouldn't need this
 				break;
 
-			assert(blocks_[(j + r)*GRID_COLS + i] == BLOCK_EMPTY);
 			blocks_[(j + r)*GRID_COLS + i] = BLOCK_JAMA;
 		}
 	}
