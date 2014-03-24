@@ -18,6 +18,8 @@ enum {
 	FALLING_BLOCK_UPDATE_INTERVAL = 3,
 	FALLING_BLOCK_DROP_INTERVAL = 30,
 	FALLING_BLOCK_NUM_ROTATIONS = 4,
+
+	FALLING_BLOCK_ANIMATION_TICS = 4,
 	FALLING_BLOCK_ROTATION_TICS = 8,
 
 	DROPPING_JAMA_SPEED = 5,
@@ -113,7 +115,6 @@ grid::falling_block::initialize()
 	col_ = GRID_COLS/2 - 1;
 	rotation_ = 0;
 
-	input_poll_tics_ = 0;
 	drop_tics_ = FALLING_BLOCK_DROP_INTERVAL;
 
 	set_state(STATE_PLAYER_CONTROL);
@@ -122,15 +123,40 @@ grid::falling_block::initialize()
 void
 grid::falling_block::draw(gfx::context& gfx, int base_x, int base_y) const
 {
+	const int xo = base_x + col_*BLOCK_SIZE;
+	const int yo = base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE;
+
 	// first block
-	block_draw(gfx, blocks_[0], base_x + col_*BLOCK_SIZE, base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE);
+	int x0, y0;
+
+	switch (state_) {
+		case STATE_MOVING_LEFT:
+			x0 = xo - state_tics_*BLOCK_SIZE/FALLING_BLOCK_ANIMATION_TICS;
+			y0 = yo;
+			break;
+
+		case STATE_MOVING_RIGHT:
+			x0 = xo + state_tics_*BLOCK_SIZE/FALLING_BLOCK_ANIMATION_TICS;
+			y0 = yo;
+			break;
+
+		case STATE_DROPPING:
+			x0 = xo;
+			y0 = yo + state_tics_*BLOCK_SIZE/FALLING_BLOCK_ANIMATION_TICS;
+			break;
+
+		default:
+			x0 = xo;
+			y0 = yo;
+			break;
+	}
 
 	// second block
-	int x, y;
+	int x1, y1;
 
 	if (state_ != STATE_ROTATING) {
-		x = base_x + (col_ + offsets[rotation_][1])*BLOCK_SIZE;
-		y = base_y + (GRID_ROWS - 1)*BLOCK_SIZE - (row_ + offsets[rotation_][0])*BLOCK_SIZE;
+		x1 = x0 + offsets[rotation_][1]*BLOCK_SIZE;
+		y1 = y0 - offsets[rotation_][0]*BLOCK_SIZE;
 	} else {
 		static const struct offset {
 			int dx, dy;
@@ -141,14 +167,12 @@ grid::falling_block::draw(gfx::context& gfx, int base_x, int base_y) const
 			{ { 0, -16 }, { 3, -15 }, { 6, -14 }, { 8, -13 }, { 11, -11 }, { 13, -8 }, { 14, -6 }, { 15, -3 }, },
 		};
 
-		int xo = base_x + col_*BLOCK_SIZE;
-		int yo = base_y + (GRID_ROWS - 1)*BLOCK_SIZE - row_*BLOCK_SIZE;
-
-		x = xo + rotation_offsets[rotation_][state_tics_].dx;
-		y = yo + rotation_offsets[rotation_][state_tics_].dy;
+		x1 = x0 + rotation_offsets[rotation_][state_tics_].dx;
+		y1 = y0 + rotation_offsets[rotation_][state_tics_].dy;
 	}
 
-	block_draw(gfx, blocks_[1], x, y);
+	block_draw(gfx, blocks_[0], x0, y0);
+	block_draw(gfx, blocks_[1], x1, y1);
 }
 
 bool
@@ -163,59 +187,75 @@ bool
 grid::falling_block::update(const grid *g, unsigned dpad_state)
 {
 	if (state_ == STATE_PLAYER_CONTROL) {
-		bool is_active = true;
-
-		if (input_poll_tics_ > 0) {
-			--input_poll_tics_;
-		} else {
-			if (dpad_state & DPAD_LEFT) {
-				if (can_move(g, 0, -1)) {
-					--col_;
-					input_poll_tics_ = FALLING_BLOCK_UPDATE_INTERVAL;
-				}
-			}
-
-			if (dpad_state & DPAD_RIGHT) {
-				if (can_move(g, 0, 1)) {
-					++col_;
-					input_poll_tics_ = FALLING_BLOCK_UPDATE_INTERVAL;
-				}
-			}
-
-			if (dpad_state & DPAD_DOWN) {
-				if (can_move(g, -1, 0)) {
-					--row_;
-					input_poll_tics_ = FALLING_BLOCK_UPDATE_INTERVAL;
-				} else {
-					is_active = false;
-				}
-			}
-
-			if (dpad_state & DPAD_BUTTON) {
-				int next_rotation = rotation_ + 1;
-				if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
-					next_rotation = 0;
-
-				if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1]))
-					set_state(STATE_ROTATING);
+		if (dpad_state & DPAD_LEFT) {
+			if (can_move(g, 0, -1)) {
+				set_state(STATE_MOVING_LEFT);
+				return true;
 			}
 		}
 
-		if (is_active && state_ == STATE_PLAYER_CONTROL) {
-			if (drop_tics_ > 0) {
-				--drop_tics_;
+		if (dpad_state & DPAD_RIGHT) {
+			if (can_move(g, 0, 1)) {
+				set_state(STATE_MOVING_RIGHT);
+				return true;
+			}
+		}
+
+		if (dpad_state & DPAD_DOWN) {
+			if (can_move(g, -1, 0)) {
+				set_state(STATE_DROPPING);
+				return true;
 			} else {
-				if (can_move(g, -1, 0)) {
-					--row_;
-					drop_tics_ = FALLING_BLOCK_DROP_INTERVAL;
-				} else {
-					/* can't drop */
-					is_active = false;
-				}
+				return false;
 			}
 		}
 
-		return is_active;
+		if (dpad_state & DPAD_BUTTON) {
+			int next_rotation = rotation_ + 1;
+			if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
+				next_rotation = 0;
+
+			if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1])) {
+				set_state(STATE_ROTATING);
+				return true;
+			}
+		}
+
+		if (drop_tics_ > 0) {
+			--drop_tics_;
+		} else {
+			if (can_move(g, -1, 0)) {
+				set_state(STATE_DROPPING);
+				return true;
+			} else {
+				/* can't drop */
+				return false;
+			}
+		}
+
+		return true;
+	} else if (state_ == STATE_MOVING_LEFT) {
+		if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
+			--col_;
+			set_state(STATE_PLAYER_CONTROL);
+		}
+
+		return true;
+	} else if (state_ == STATE_MOVING_RIGHT) {
+		if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
+			++col_;
+			set_state(STATE_PLAYER_CONTROL);
+		}
+
+		return true;
+	} else if (state_ == STATE_DROPPING) {
+		if (++state_tics_ == FALLING_BLOCK_ANIMATION_TICS) {
+			--row_;
+			drop_tics_ = FALLING_BLOCK_DROP_INTERVAL;
+			set_state(STATE_PLAYER_CONTROL);
+		}
+
+		return true;
 	} else if (state_ == STATE_ROTATING) {
 		if (++state_tics_ == FALLING_BLOCK_ROTATION_TICS) {
 			if (++rotation_ == FALLING_BLOCK_NUM_ROTATIONS)
@@ -304,7 +344,7 @@ grid::draw_blocks(gfx::context& gfx) const
 					break;
 
 				case BLOCK_JAMA:
-					jama_sprite->draw(gfx, x, y);
+					jama_sprite->draw(gfx, x, hanging ? y + y_offset : y);
 					break;
 
 				default:

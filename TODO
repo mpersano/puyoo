@@ -7,6 +7,9 @@ v get rid of fopen/fread/fclose (sucks on libpsx)
 * move falling block to right/left when rotating on left/right corners
 * hiccups when dropping blocks
 * jama blocks
+  v dropping jama state
+  v kill jama when next to chain
+  * send jama to opponent
 * enemy AI
 * text render
 * explosion sprites/animation

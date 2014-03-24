@@ -79,13 +79,15 @@ private:
 		enum state {
 			STATE_PLAYER_CONTROL,
 			STATE_ROTATING,
+			STATE_MOVING_LEFT,
+			STATE_MOVING_RIGHT,
+			STATE_DROPPING,
 		};
 
 		void set_state(state next_state);
 
 		int blocks_[2];
 		int row_, col_, rotation_;
-		int input_poll_tics_;
 		int drop_tics_;
 		state state_;
 		int state_tics_;
