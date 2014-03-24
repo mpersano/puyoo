@@ -244,15 +244,17 @@ falling_block::update(const grid *g, unsigned dpad_state)
 			if (!control_strategy_->update(this, g, dpad_state))
 				return false;
 
-			if (drop_tics_ > 0) {
-				--drop_tics_;
-			} else {
-				if (can_move(g, -1, 0)) {
-					set_state(STATE_DROPPING);
-					return true;
+			if (state_ == STATE_PLAYER_CONTROL) {
+				if (drop_tics_ > 0) {
+					--drop_tics_;
 				} else {
-					/* can't drop */
-					return false;
+					if (can_move(g, -1, 0)) {
+						set_state(STATE_DROPPING);
+						return true;
+					} else {
+						/* can't drop */
+						return false;
+					}
 				}
 			}
 
