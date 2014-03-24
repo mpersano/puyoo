@@ -92,6 +92,7 @@ class falling_block
 {
 public:
 	falling_block();
+	virtual ~falling_block() { }
 
 	void reset();
 	void draw(gfx::context& gfx, int base_x, int base_y) const;
@@ -99,7 +100,14 @@ public:
 	bool can_move(const grid *g, int dr, int dc) const;
 	void copy_to_grid(grid *g);
 
-private:
+protected:
+	bool move_left(const grid *g);
+	bool move_right(const grid *g);
+	bool move_down(const grid *g);
+	bool rotate(const grid *g);
+
+	virtual bool update_position(const grid *g, unsigned dpad_state) = 0;
+
 	enum state {
 		STATE_PLAYER_CONTROL,
 		STATE_ROTATING,
@@ -116,6 +124,18 @@ private:
 	int drop_tics_;
 	state state_;
 	int state_tics_;
+};
+
+class player_falling_block : public falling_block
+{
+protected:
+	bool update_position(const grid *g, unsigned dpad_state);
+};
+
+class computer_falling_block : public falling_block
+{
+protected:
+	bool update_position(const grid *g, unsigned dpad_state);
 };
 
 falling_block::falling_block()
@@ -206,39 +226,8 @@ falling_block::update(const grid *g, unsigned dpad_state)
 {
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			if (dpad_state & DPAD_LEFT) {
-				if (can_move(g, 0, -1)) {
-					set_state(STATE_MOVING_LEFT);
-					return true;
-				}
-			}
-
-			if (dpad_state & DPAD_RIGHT) {
-				if (can_move(g, 0, 1)) {
-					set_state(STATE_MOVING_RIGHT);
-					return true;
-				}
-			}
-
-			if (dpad_state & DPAD_DOWN) {
-				if (can_move(g, -1, 0)) {
-					set_state(STATE_DROPPING);
-					return true;
-				} else {
-					return false;
-				}
-			}
-
-			if (dpad_state & DPAD_BUTTON) {
-				int next_rotation = rotation_ + 1;
-				if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
-					next_rotation = 0;
-
-				if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1])) {
-					set_state(STATE_ROTATING);
-					return true;
-				}
-			}
+			if (!update_position(g, dpad_state))
+				return false;
 
 			if (drop_tics_ > 0) {
 				--drop_tics_;
@@ -296,6 +285,102 @@ falling_block::update(const grid *g, unsigned dpad_state)
 	}
 }
 
+bool
+falling_block::move_left(const grid *g)
+{
+	if (can_move(g, 0, -1)) {
+		set_state(STATE_MOVING_LEFT);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+falling_block::move_right(const grid *g)
+{
+	if (can_move(g, 0, 1)) {
+		set_state(STATE_MOVING_RIGHT);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+falling_block::move_down(const grid *g)
+{
+	if (can_move(g, -1, 0)) {
+		set_state(STATE_DROPPING);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+falling_block::rotate(const grid *g)
+{
+	int next_rotation = rotation_ + 1;
+	if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
+		next_rotation = 0;
+
+	if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1])) {
+		set_state(STATE_ROTATING);
+		return true;
+	}
+
+	return false;
+}
+
+bool
+player_falling_block::update_position(const grid *g, unsigned dpad_state)
+{
+	if (dpad_state & DPAD_LEFT) {
+		if (move_left(g))
+			return true;
+	}
+
+	if (dpad_state & DPAD_RIGHT) {
+		if (move_right(g))
+			return true;
+	}
+
+	if (dpad_state & DPAD_BUTTON) {
+		if (rotate(g))
+			return true;
+	}
+
+	if (dpad_state & DPAD_DOWN)
+		return move_down(g);
+
+	return true;
+}
+
+bool
+computer_falling_block::update_position(const grid *g, unsigned dpad_state)
+{
+	if ((rand() & 0x3f) == 0) {
+		if (move_left(g))
+			return true;
+	}
+
+	if ((rand() & 0x3f) == 0) {
+		if (move_right(g))
+			return true;
+	}
+
+	if ((rand() & 0x3f) == 0) {
+		if (rotate(g))
+			return true;
+	}
+
+	if ((rand() & 0x3f) == 0)
+		return move_down(g);
+
+	return true;
+}
+
 void
 falling_block::set_state(state next_state)
 {
@@ -341,7 +426,10 @@ grid::initialize(int base_x, int base_y, bool human_control)
 	base_x_ = base_x;
 	base_y_ = base_y;
 
-	falling_block_ = new falling_block;
+	if (human_control)
+		falling_block_ = new player_falling_block;
+	else
+		falling_block_ = new computer_falling_block;
 
 	reset();
 }
