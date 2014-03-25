@@ -338,16 +338,32 @@ falling_block::move_down(const grid *g)
 bool
 falling_block::rotate(const grid *g)
 {
-	int next_rotation = rotation_ + 1;
-	if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
-		next_rotation = 0;
+	if (col_ == 0 && rotation_ == 1) {
+		if (can_move(g, 0, 1)) {
+			++col_;
+			set_state(STATE_ROTATING);
+		}
 
-	if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1])) {
-		set_state(STATE_ROTATING);
-		return true;
+		return false;
+	} else if (col_ == GRID_COLS - 1 && rotation_ == 3) {
+		if (can_move(g, -1, 0)) {
+			--col_;
+			set_state(STATE_ROTATING);
+		}
+
+		return false;
+	} else {
+		int next_rotation = rotation_ + 1;
+		if (next_rotation == FALLING_BLOCK_NUM_ROTATIONS)
+			next_rotation = 0;
+
+		if (g->is_empty(row_ + offsets[next_rotation][0], col_ + offsets[next_rotation][1])) {
+			set_state(STATE_ROTATING);
+			return true;
+		}
+
+		return false;
 	}
-
-	return false;
 }
 
 bool
