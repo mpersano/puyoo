@@ -10,7 +10,7 @@ class font_renderer;
 class font
 {
 public:
-	font(const char *texture_path, size_t glyph_width, size_t glyph_height);
+	font(const char *name);
 	virtual ~font();
 
 	void draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const;

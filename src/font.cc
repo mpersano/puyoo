@@ -2,6 +2,7 @@
 #include <stdarg.h>
 
 #include "common.h"
+#include "file_reader.h"
 #include "font.h"
 
 class font_renderer
@@ -54,26 +55,18 @@ private:
 	size_t glyph_width_, glyph_height_;
 };
 
-font::font(const char *texture_path, size_t glyph_width, size_t glyph_height)
-: texture_(gfx::texture::load_from_tga(texture_path))
+font::font(const char *name)
+: texture_(gfx::texture::load_from_tga(make_path(name, "TGA")))
 {
 	texture_->upload_to_vram();
 
-	memset(glyph_map_, 0, sizeof(glyph_map_));
+	file_reader reader(make_path(name, "FNT"));
 
-	const char *chars =
-		" !\"#$%&'"
-		"()*+,-./"
-		"01234567"
-		"89:;<=>?"
-		"@ABCDEFG"
-		"HIJKLMNO"
-		"PQRSTUVW"
-		"XYZ[\\]^_"
-		"`abcdefg"
-		"hijklmno"
-		"pqrstuvw"
-		"xyz{|}~";
+	const int glyph_width = reader.read_uint8();
+	const int glyph_height = reader.read_uint8();
+	char *chars = reader.read_string();
+
+	memset(glyph_map_, 0, sizeof(glyph_map_));
 
 	size_t u = 0, v = 0;
 
@@ -85,6 +78,8 @@ font::font(const char *texture_path, size_t glyph_width, size_t glyph_height)
 			v += glyph_height;
 		}
 	}
+
+	delete[] chars;
 
 	if (glyph_width == 8 && glyph_height == 8)
 		renderer_ = new font_8x8_renderer(glyph_map_);
@@ -160,7 +155,7 @@ font_manager::get(const char *name)
 	font *p = dict_.get(name);
 
 	if (!p) {
-		p = new font(make_path(name, "TGA"), 8, 8);
+		p = new font(name);
 		dict_.put(name, p);
 	}
 

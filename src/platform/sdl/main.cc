@@ -37,7 +37,7 @@ const char *
 make_path(const char *name, const char *ext)
 {
 	static char buf[80];
-	sprintf(buf, "%s.%s", name, ext);
+	sprintf(buf, "data/%s.%s", name, ext);
 	return buf;
 }
 
