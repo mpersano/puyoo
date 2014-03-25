@@ -14,7 +14,7 @@ public:
 
 	virtual ~font_renderer() { }
 
-	virtual void operator()(gfx::context& gfx, int x, int y, const char *str) const = 0;
+	virtual void render(gfx::context& gfx, int x, int y, const char *str) const = 0;
 
 protected:
 	const font::glyph *const *glyphs_;
@@ -27,7 +27,7 @@ public:
 	: font_renderer(glyphs)
 	{ }
 
-	void operator()(gfx::context& gfx, int x, int y, const char *str) const;
+	void render(gfx::context& gfx, int x, int y, const char *str) const;
 };
 
 class font_16x16_renderer : public font_renderer
@@ -37,7 +37,7 @@ public:
 	: font_renderer(glyphs)
 	{ }
 
-	void operator()(gfx::context& gfx, int x, int y, const char *str) const;
+	void render(gfx::context& gfx, int x, int y, const char *str) const;
 };
 
 class font_generic_renderer : public font_renderer
@@ -49,7 +49,7 @@ public:
 	, glyph_height_(glyph_height)
 	{ }
 
-	void operator()(gfx::context& gfx, int x, int y, const char *str) const;
+	void render(gfx::context& gfx, int x, int y, const char *str) const;
 
 private:
 	size_t glyph_width_, glyph_height_;
@@ -106,11 +106,11 @@ font::draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const
 	va_end(ap);
 
 	gfx.bind_texture(texture_);
-	(*renderer_)(gfx, x, y, buf);
+	renderer_->render(gfx, x, y, buf);
 }
 
 void
-font_8x8_renderer::operator()(gfx::context& gfx, int x, int y, const char *str) const
+font_8x8_renderer::render(gfx::context& gfx, int x, int y, const char *str) const
 {
 	for (const char *p = str; *p; p++) {
 		const font::glyph *g = glyphs_[static_cast<int>(*p)];
@@ -120,7 +120,7 @@ font_8x8_renderer::operator()(gfx::context& gfx, int x, int y, const char *str) 
 }
 
 void
-font_16x16_renderer::operator()(gfx::context& gfx, int x, int y, const char *str) const
+font_16x16_renderer::render(gfx::context& gfx, int x, int y, const char *str) const
 {
 	for (const char *p = str; *p; p++) {
 		const font::glyph *g = glyphs_[static_cast<int>(*p)];
@@ -130,7 +130,7 @@ font_16x16_renderer::operator()(gfx::context& gfx, int x, int y, const char *str
 }
 
 void
-font_generic_renderer::operator()(gfx::context& gfx, int x, int y, const char *str) const
+font_generic_renderer::render(gfx::context& gfx, int x, int y, const char *str) const
 {
 	for (const char *p = str; *p; p++) {
 		const font::glyph *g = glyphs_[static_cast<int>(*p)];
