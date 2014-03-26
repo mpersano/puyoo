@@ -555,7 +555,7 @@ grid::draw_dropping_jama(gfx::context& gfx) const
 		int num_jama = dropping_jama_[i];
 
 		if (num_jama) {
-			int height = base_y_ + GRID_ROWS*BLOCK_SIZE - (get_col_height(i) + dropping_jama_[i])*BLOCK_SIZE;
+			int height = base_y_ + (GRID_ROWS - (get_col_height(i) + dropping_jama_[i]))*BLOCK_SIZE;
 
 			int y = base_y_ - num_jama*BLOCK_SIZE + DROPPING_JAMA_SPEED*state_tics_;
 			if (y > height)
@@ -802,7 +802,7 @@ grid::drop_jama()
 		int col = -1, index = 1;
 
 		for (int j = 0; j < GRID_COLS; j++) {
-			int height = get_col_height(j);
+			int height = get_col_height(j) + dropping_jama_[j];
 
 			if (height < GRID_ROWS) {
 				if (rand()%index == 0)
@@ -821,7 +821,7 @@ grid::drop_jama()
 	jama_drop_tics_ = 0;
 
 	for (int i = 0; i < GRID_COLS; i++) {
-		int height = base_y_ + GRID_ROWS*BLOCK_SIZE - (get_col_height(i) + dropping_jama_[i])*BLOCK_SIZE;
+		int height = (GRID_ROWS - get_col_height(i))*BLOCK_SIZE;
 		int tics = height/DROPPING_JAMA_SPEED;
 
 		if (tics > jama_drop_tics_)
