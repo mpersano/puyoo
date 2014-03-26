@@ -40,6 +40,8 @@ public:
 
 	void add_jama(int num_jama);
 
+	bool game_over() const;
+
 private:
 	void draw_blocks(gfx::context& gfx) const;
 	void draw_dropping_jama(gfx::context& gfx) const;
@@ -59,11 +61,14 @@ private:
 
 	int get_col_height(int r) const;
 
+	bool is_game_over() const;
+
 	enum state {
 		STATE_PLAYER_CONTROL,
 		STATE_EXPLODING_BLOCKS,
 		STATE_DROPPING_BLOCKS,
 		STATE_DROPPING_JAMA,
+		STATE_GAME_OVER,
 	};
 
 	void set_state(state next_state);

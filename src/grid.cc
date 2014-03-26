@@ -654,6 +654,12 @@ grid::find_chains()
 }
 
 bool
+grid::is_game_over() const
+{
+	return blocks_[(GRID_ROWS - 1)*GRID_COLS + 2] != BLOCK_EMPTY || blocks_[(GRID_ROWS - 1)*GRID_COLS + 3] != BLOCK_EMPTY;
+}
+
+bool
 grid::has_hanging_blocks() const
 {
 	for (const unsigned char *p = &blocks_[GRID_COLS]; p < &blocks_[GRID_ROWS*GRID_COLS]; p++) {
@@ -717,6 +723,8 @@ grid::update(unsigned dpad_state)
 		} else if (jama_to_drop_) {
 			drop_jama();
 			set_state(STATE_DROPPING_JAMA);
+		} else if (is_game_over()) {
+			set_state(STATE_GAME_OVER);
 		} else {
 			opponent_->add_jama(combo_size_);
 			falling_block_->reset();
@@ -754,6 +762,9 @@ grid::update(unsigned dpad_state)
 			}
 			break;
 
+		case STATE_GAME_OVER:
+			break;
+
 		default:
 			break;
 	}
@@ -765,17 +776,38 @@ grid::add_jama(int num_jama)
 	jama_to_drop_ += num_jama;
 }
 
+bool
+grid::game_over() const
+{
+	return state_ == STATE_GAME_OVER;
+}
+
 void
 grid::drop_jama()
 {
 	memset(dropping_jama_, 0, sizeof(dropping_jama_));
 
-	jama_drop_tics_ = 0;
+	while (jama_to_drop_) {
+		int col = -1, index = 1;
 
-	for (int i = 0; i < jama_to_drop_; i++) {
-		// XXX: check height
-		dropping_jama_[rand()%GRID_COLS]++;
+		for (int j = 0; j < GRID_COLS; j++) {
+			int height = get_col_height(j);
+
+			if (height < GRID_ROWS) {
+				if (rand()%index == 0)
+					col = j;
+				++index;
+			}
+		}
+
+		if (col == -1)
+			break;
+
+		dropping_jama_[col]++;
+		--jama_to_drop_;
 	}
+
+	jama_drop_tics_ = 0;
 
 	for (int i = 0; i < GRID_COLS; i++) {
 		int height = base_y_ + GRID_ROWS*BLOCK_SIZE - (get_col_height(i) + dropping_jama_[i])*BLOCK_SIZE;
@@ -784,8 +816,6 @@ grid::drop_jama()
 		if (tics > jama_drop_tics_)
 			jama_drop_tics_ = tics;
 	}
-
-	jama_to_drop_ = 0;
 }
 
 void
