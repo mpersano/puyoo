@@ -5,7 +5,7 @@
 
 namespace gfx {
 
-template <class Impl>
+template <typename Impl>
 class texture_base
 {
 public:

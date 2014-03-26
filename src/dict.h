@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-template <class T>
+template <typename T>
 class dict
 {
 public:
