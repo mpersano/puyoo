@@ -18,7 +18,7 @@ enum {
 	FALLING_BLOCK_DROP_INTERVAL = 30,
 	FALLING_BLOCK_NUM_ROTATIONS = 4,
 
-	FALLING_BLOCK_ANIMATION_TICS = 4,
+	FALLING_BLOCK_ANIMATION_TICS = 6,
 	FALLING_BLOCK_WAIT_TICS = 2,
 	FALLING_BLOCK_ROTATION_TICS = 8,
 
@@ -172,13 +172,13 @@ falling_block::reset()
 	blocks_[0] = rand()%NUM_BLOCK_TYPES + 1;
 	blocks_[1] = rand()%NUM_BLOCK_TYPES + 1;
 
-	row_ = GRID_ROWS - 1;
+	row_ = GRID_ROWS;
 	col_ = GRID_COLS/2 - 1;
 	rotation_ = 0;
 
 	drop_tics_ = FALLING_BLOCK_DROP_INTERVAL;
 
-	set_state(STATE_PLAYER_CONTROL);
+	set_state(STATE_DROPPING);
 }
 
 void
@@ -232,8 +232,9 @@ falling_block::draw(gfx::context& gfx, int base_x, int base_y) const
 		y1 = y0 + rotation_offsets[rotation_][state_tics_].dy;
 	}
 
-	block_draw(gfx, blocks_[0], x0, y0);
-	block_draw(gfx, blocks_[1], x1, y1);
+	const rect clip_rect(base_x, base_x + GRID_COLS*BLOCK_SIZE, base_y, base_y + GRID_ROWS*BLOCK_SIZE);
+	block_sprites[blocks_[0] - 1]->draw(gfx, clip_rect, x0, y0);
+	block_sprites[blocks_[1] - 1]->draw(gfx, clip_rect, x1, y1);
 }
 
 bool
