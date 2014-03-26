@@ -4,7 +4,6 @@
 #include "font.h"
 #include "gfx_context.h"
 
-font *medium_font;
 static grid left_grid, right_grid;
 
 void
@@ -35,7 +34,7 @@ void
 game_update()
 {
 	left_grid.update(dpad_state);
-	right_grid.update(0);
+	right_grid.update(dpad_state);
 }
 
 void
