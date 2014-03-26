@@ -4,6 +4,44 @@
 #include "file_reader.h"
 #include "sprite.h"
 
+void
+sprite::draw(gfx::context& gfx, const rect& clip, int x, int y) const
+{
+	int x0 = x, x1 = x + width();
+	int u = u_;
+
+	if (x0 < clip.x_min_) {
+		if (x1 <= clip.x_min_)
+			return;
+		u += clip.x_min_ - x0;
+		x0 = clip.x_min_;
+	}
+
+	if (x1 > clip.x_max_) {
+		if (x0 >= clip.x_max_)
+			return;
+		x1 = clip.x_max_;
+	}
+
+	int y0 = y, y1 = y + height();
+	int v = v_;
+
+	if (y0 < clip.y_min_) {
+		if (y1 <= clip.y_min_)
+			return;
+		v += clip.y_min_ - y0;
+		y0 = clip.y_min_;
+	}
+
+	if (y1 > clip.y_max_) {
+		if (y0 >= clip.y_max_)
+			return;
+		y1 = clip.y_max_;
+	}
+
+	gfx.add_sprite(x0, y0, u, v, x1 - x0, y1 - y0, gfx::rgb(255, 255, 255));
+}
+
 class sprite_8x8 : public sprite
 {
 public:

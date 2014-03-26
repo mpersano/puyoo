@@ -546,6 +546,8 @@ grid::get_col_height(int c) const
 void
 grid::draw_dropping_jama(gfx::context& gfx) const
 {
+	const rect clip_rect(base_x_, base_x_ + GRID_COLS*BLOCK_SIZE, base_y_, base_y_ + GRID_ROWS*BLOCK_SIZE);
+
 	int x = base_x_;
 
 	for (int i = 0; i < GRID_COLS; i++) {
@@ -565,7 +567,7 @@ grid::draw_dropping_jama(gfx::context& gfx) const
 			}
 
 			for (int j = 0; j < num_jama; j++) {
-				jama_sprite->draw(gfx, x, y);
+				jama_sprite->draw(gfx, clip_rect, x, y);
 				y += BLOCK_SIZE;
 			}
 		}

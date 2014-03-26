@@ -5,6 +5,17 @@
 #include "texture.h"
 #include "gfx_context.h"
 
+struct rect
+{
+	rect(int x_min, int x_max, int y_min, int y_max)
+	: x_min_(x_min), x_max_(x_max)
+	, y_min_(y_min), y_max_(y_max)
+	{ }
+
+	int x_min_, x_max_;
+	int y_min_, y_max_;
+};
+
 struct sprite
 {
 public:
@@ -26,6 +37,8 @@ public:
 	virtual int height() const = 0;
 
 	virtual void draw(gfx::context& gfx, int x, int y) const = 0;
+
+	void draw(gfx::context& gfx, const rect& clip, int x, int y) const;
 
 protected:
 	int u_, v_;

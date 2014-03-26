@@ -9,11 +9,12 @@ v get rid of fopen/fread/fclose (sucks on libpsx)
   * sparks before explosion
   v explosion sprites
 v move falling block to right/left when rotating on left/right corners
-* jama blocks
+v jama blocks
   v dropping jama state
   v kill jama when next to chain
-  * send jama to opponent
-  * max # of jama per column
+  v send jama to opponent
+  v max # of jama per column
+  v clip jama sprites outside grid area when dropping
 * opponent AI
 v text render
 * grid
