@@ -32,6 +32,7 @@ static const sprite_atlas *sprites;
 static const sprite *block_sprites[NUM_BLOCK_TYPES];
 static const sprite *explosion_sprites[NUM_EXPLOSION_FRAMES];
 static const sprite *jama_sprite;
+static const sprite *grid_background_sprite;
 static const font *hud_font;
 
 static const int offsets[FALLING_BLOCK_NUM_ROTATIONS][2] = { { 0, 1 }, { -1, 0 }, { 0, -1 }, { 1, 0 } };
@@ -65,9 +66,15 @@ initialize_explosion_sprites()
 }
 
 static void
-initialize_jama_sprite()
+initialize_jama_sprites()
 {
 	jama_sprite = sprites->get_sprite("jama.png");
+}
+
+static void
+initialize_background_sprites()
+{
+	grid_background_sprite = sprites->get_sprite("grid-background.png");
 }
 
 void
@@ -76,7 +83,8 @@ grid_init_resources()
 	sprites = sprite_atlas_manager::instance().get("SPRITES");
 	initialize_block_sprites();
 	initialize_explosion_sprites();
-	initialize_jama_sprite();
+	initialize_jama_sprites();
+	initialize_background_sprites();
 
 	hud_font = font_manager::instance().get("SONIC");
 }
@@ -575,7 +583,7 @@ grid::draw_hud(gfx::context& gfx) const
 void
 grid::draw_background(gfx::context& gfx) const
 {
-	gfx.add_rectangle(base_x_, base_y_, GRID_COLS*BLOCK_SIZE, GRID_ROWS*BLOCK_SIZE, gfx::rgb(0, 0, 80));
+	grid_background_sprite->draw(gfx, base_x_, base_y_);
 }
 
 void
@@ -690,9 +698,9 @@ grid::drop_hanging_blocks()
 void
 grid::draw(gfx::context& gfx) const
 {
-	draw_background(gfx);
-
 	gfx.bind_texture(sprites->get_texture());
+
+	draw_background(gfx);
 
 	draw_blocks(gfx);
 
