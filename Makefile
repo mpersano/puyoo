@@ -30,7 +30,8 @@ OBJS = \
 	$(OBJ)/image.o \
 	$(OBJ)/sprite.o \
 	$(OBJ)/font.o \
-	$(OBJ)/file_reader.o
+	$(OBJ)/file_reader.o \
+	$(OBJ)/in_game.o
 
 include $(SRC)/platform/$(PLATFORM)/$(PLATFORM).mk
 
