@@ -24,7 +24,11 @@ v text render
   * score
     * increment score
     * score display
-* "combo" animation
 * game states
   * menu
   * in-game
+* juice!
+  * "combo" text
+  * animation when sending jama blocks to opponent
+  * flash grid when making a combo
+  * "shake" blocks when jama drops
