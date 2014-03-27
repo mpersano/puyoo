@@ -89,13 +89,6 @@ grid_init_resources()
 	hud_font = font_manager::instance().get("SONIC");
 }
 
-static void
-block_draw(gfx::context& gfx, int type, int x, int y)
-{
-	if (type >= BLOCK_EMPTY + 1 && type <= BLOCK_EXPLODING - 1)
-		block_sprites[type - 1]->draw(gfx, x, y);
-}
-
 class control_strategy
 {
 public:
@@ -505,7 +498,9 @@ grid::draw_blocks(gfx::context& gfx) const
 		int y = base_y_ + (GRID_ROWS - 1)*BLOCK_SIZE;
 
 		for (const unsigned char *p = &blocks_[c]; p < &blocks_[GRID_ROWS*GRID_COLS]; p += GRID_COLS) {
-			switch (*p) {
+			const int type = *p;
+
+			switch (type) {
 				case BLOCK_EMPTY:
 					hanging = true;
 					break;
@@ -522,7 +517,7 @@ grid::draw_blocks(gfx::context& gfx) const
 					break;
 
 				default:
-					block_draw(gfx, *p, x, hanging ? y + y_offset : y);
+					block_sprites[type - 1]->draw(gfx, x, hanging ? y + y_offset : y);
 					break;
 			}
 
