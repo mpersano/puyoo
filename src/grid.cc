@@ -106,16 +106,12 @@ grid::set_state(state next_state)
 	state_tics_ = 0;
 }
 
-void
-grid::initialize(int base_x, int base_y, grid *opponent, bool human_control)
+grid::grid(int base_x, int base_y, grid *opponent, bool human_control)
+: falling_block_(human_control)
+, base_x_(base_x)
+, base_y_(base_y)
+, opponent_(opponent)
 {
-	base_x_ = base_x;
-	base_y_ = base_y;
-
-	opponent_ = opponent;
-
-	falling_block_ = new falling_block(human_control);
-
 	reset();
 }
 
@@ -128,7 +124,7 @@ grid::reset()
 
 	set_state(STATE_PLAYER_CONTROL);
 
-	falling_block_->reset();
+	falling_block_.reset();
 }
 
 void
@@ -355,7 +351,7 @@ grid::draw(gfx::context& gfx) const
 
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			falling_block_->draw(gfx, base_x_, base_y_);
+			falling_block_.draw(gfx, base_x_, base_y_);
 			break;
 
 		case STATE_DROPPING_JAMA:
@@ -384,7 +380,7 @@ grid::update(unsigned dpad_state)
 			set_state(STATE_GAME_OVER);
 		} else {
 			opponent_->add_jama(combo_size_);
-			falling_block_->reset();
+			falling_block_.reset();
 			combo_size_ = 0;
 			set_state(STATE_PLAYER_CONTROL);
 		}
@@ -392,8 +388,8 @@ grid::update(unsigned dpad_state)
 
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
-			if (!falling_block_->update(this, dpad_state)) {
-				falling_block_->copy_to_grid(this);
+			if (!falling_block_.update(this, dpad_state)) {
+				falling_block_.copy_to_grid(this);
 				on_drop();
 			}
 			break;

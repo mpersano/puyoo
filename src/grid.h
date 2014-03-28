@@ -2,6 +2,7 @@
 #define GRID_H_
 
 #include "gfx_context.h"
+#include "falling_block.h"
 
 enum {
 	BLOCK_SIZE = 16,
@@ -23,12 +24,10 @@ enum block_type {
 	NUM_BLOCK_TYPES = BLOCK_YELLOW - BLOCK_CYAN + 1,
 };
 
-class falling_block;
-
 class grid
 {
 public:
-	void initialize(int base_x, int base_y, grid *opponent, bool human_control);
+	grid(int base_x, int base_y, grid *opponent, bool human_control);
 
 	void reset();
 	void update(unsigned dpad_state);
@@ -73,7 +72,7 @@ private:
 
 	void set_state(state next_state);
 
-	falling_block *falling_block_;
+	falling_block falling_block_;
 	unsigned char blocks_[GRID_ROWS*GRID_COLS];
 	int base_x_, base_y_;
 	state state_;

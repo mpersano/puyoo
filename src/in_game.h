@@ -13,7 +13,7 @@ public:
 	void update(unsigned dpad_state);
 
 private:
-	grid left_grid, right_grid;
+	grid left_grid_, right_grid_;
 };
 
 #endif // IN_GAME_H_
