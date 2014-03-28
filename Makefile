@@ -27,6 +27,7 @@ LDFLAGS =
 OBJS = \
 	$(OBJ)/game.o \
 	$(OBJ)/grid.o \
+	$(OBJ)/falling_block.o \
 	$(OBJ)/image.o \
 	$(OBJ)/sprite.o \
 	$(OBJ)/font.o \
