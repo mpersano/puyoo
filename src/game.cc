@@ -2,6 +2,8 @@
 #include "in_game.h"
 #include "common.h"
 #include "grid.h"
+#include "combo_animation.h"
+#include "game.h"
 
 static game_state *cur_state_;
 
@@ -9,6 +11,8 @@ void
 game_initialize()
 {
 	grid_init_resources();
+	combo_animation_init_resources();
+
 	cur_state_ = new in_game;
 }
 

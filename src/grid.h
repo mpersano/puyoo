@@ -3,6 +3,7 @@
 
 #include "gfx_context.h"
 #include "falling_block.h"
+#include "combo_animation.h"
 
 enum {
 	BLOCK_SIZE = 16,
@@ -81,6 +82,7 @@ private:
 	int dropping_jama_[GRID_COLS];
 	int combo_size_;
 	grid *opponent_;
+	combo_animation combo_animation_;
 };
 
 void

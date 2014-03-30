@@ -28,6 +28,7 @@ OBJS = \
 	$(OBJ)/game.o \
 	$(OBJ)/grid.o \
 	$(OBJ)/falling_block.o \
+	$(OBJ)/combo_animation.o \
 	$(OBJ)/image.o \
 	$(OBJ)/sprite.o \
 	$(OBJ)/font.o \

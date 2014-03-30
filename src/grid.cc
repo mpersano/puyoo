@@ -3,7 +3,6 @@
 #include <stdio.h>
 
 #include "common.h"
-#include "texture.h"
 #include "sprite.h"
 #include "font.h"
 #include "falling_block.h"
@@ -296,7 +295,8 @@ grid::find_chains()
 			int chain_size = find_chain_size(visited, r, c, type);
 
 			if (chain_size >= MIN_CHAIN_SIZE) {
-				combo_size_ += 1 + chain_size - MIN_CHAIN_SIZE;
+				if (++combo_size_ >= 2)
+					combo_animation_.reset(combo_size_);
 				chain_explode(r, c, type);
 				found = true;
 			}
@@ -349,6 +349,8 @@ grid::draw(gfx::context& gfx) const
 
 	draw_blocks(gfx);
 
+	combo_animation_.draw(gfx, base_x_, base_y_);
+
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
 			falling_block_.draw(gfx, base_x_, base_y_);
@@ -385,6 +387,8 @@ grid::update(unsigned dpad_state)
 			set_state(STATE_PLAYER_CONTROL);
 		}
 	};
+
+	combo_animation_.update();
 
 	switch (state_) {
 		case STATE_PLAYER_CONTROL:
