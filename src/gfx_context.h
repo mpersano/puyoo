@@ -40,7 +40,7 @@ public:
 		static_cast<Impl *>(this)->add_sprite_8x8(x, y, u, v, color);
 	}
 
-	void bind_texture(const texture *tex)
+	void bind_texture(const texture& tex)
 	{
 		static_cast<Impl *>(this)->bind_texture(tex);
 	}

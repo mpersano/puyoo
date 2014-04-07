@@ -99,10 +99,25 @@ private:
 };
 
 sprite_atlas::sprite_atlas(const char *name)
-: texture_(gfx::texture::load_from_tga(make_path(name, "TGA")))
 {
-	texture_->upload_to_vram();
+	load_texture(name);
+	load_sprites(name);
+}
 
+void
+sprite_atlas::load_texture(const char *name)
+{
+	image *img = image::load_from_tga(make_path(name, "TGA"));
+
+	texture_.set_data(*img);
+	texture_.upload_to_vram();
+
+	delete img;
+}
+
+void
+sprite_atlas::load_sprites(const char *name)
+{
 	file_reader reader(make_path(name, "SPR"));
 
 	int num_sprites = reader.read_uint8();
@@ -136,9 +151,7 @@ sprite_atlas::sprite_atlas(const char *name)
 }
 
 sprite_atlas::~sprite_atlas()
-{
-	delete texture_;
-}
+{ }
 
 sprite_atlas_manager&
 sprite_atlas_manager::instance()

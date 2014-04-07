@@ -9,13 +9,16 @@ template <typename Impl>
 class texture_base
 {
 public:
-	virtual ~texture_base()
-	{ delete image_; }
+	texture_base()
+	: width_(0), height_(0)
+	{ }
 
-	static texture_base *load_from_tga(const char *path)
+	virtual ~texture_base()
+	{ }
+
+	void set_data(const image& img)
 	{
-		image *img = image::load_from_tga(path);
-		return img ? new Impl(img) : 0;
+		static_cast<Impl *>(this)->set_data(img);
 	}
 
 	void upload_to_vram() const
@@ -24,17 +27,14 @@ public:
 	}
 
 	size_t width() const
-	{ return image_->width(); }
+	{ return width_; }
 
 	size_t height() const
-	{ return image_->height(); }
+	{ return height_; }
 
 protected:
-	texture_base(image *img)
-	: image_(img)
-	{ }
-
-	image *image_;
+	size_t width_;
+	size_t height_;
 };
 
 }

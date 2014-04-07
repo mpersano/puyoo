@@ -9,29 +9,38 @@ namespace gfx {
 class gl_texture : public texture_base<gl_texture>
 {
 public:
-	gl_texture(image *img)
-	: texture_base<gl_texture>(img) 
+	gl_texture()
+	: data_(0)
 	{
 		glGenTextures(1, &id_);
 	}
 
 	~gl_texture()
 	{
+		if (data_)
+			delete[] data_;
+
 		glDeleteTextures(1, &id_);
+	}
+
+	void set_data(const image& img)
+	{
+		width_ = img.width();
+		height_ = img.height();
+
+		data_ = new uint32_t[width_*height_];
+
+		const uint32_t *src = img.data();
+		uint32_t *dest = data_;
+
+		for (size_t i = 0; i < width_*height_; i++) {
+			uint32_t v = *src++;
+			*dest++ = ((v >> 16) & 0xff) | (v & 0xff00) | ((v & 0xff) << 16) | (v & 0xff000000);
+		}
 	}
 
 	void upload_to_vram() const
 	{
-		uint32_t *data = new uint32_t[image_->width()*image_->height()];
-
-		const uint32_t *src = image_->data();
-		uint32_t *dest = data;
-
-		for (size_t i = 0; i < image_->width()*image_->height(); i++) {
-			uint32_t v = *src++;
-			*dest++ = ((v >> 16) & 0xff) | (v & 0xff00) | ((v & 0xff) << 16) | (v & 0xff000000);
-		}
-
 		bind();
 
 		glTexParameteri(GL_TEXTURE_RECTANGLE, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -45,13 +54,11 @@ public:
 			GL_TEXTURE_RECTANGLE,
 			0,
 			GL_RGBA,
-			image_->width(), image_->height(),
+			width_, height_,
 			0,
 			GL_RGBA,
 			GL_UNSIGNED_BYTE,
-			data);
-
-		delete[] data;
+			data_);
 	}
 
 	void bind() const
@@ -61,6 +68,7 @@ public:
 
 private:
 	GLuint id_;
+	uint32_t *data_;
 };
 
 typedef gl_texture texture_impl;

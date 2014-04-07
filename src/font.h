@@ -21,7 +21,10 @@ public:
 	};
 
 protected:
-	gfx::texture *texture_;
+	void load_texture(const char *name);
+	void load_glyphs(const char *name);
+
+	gfx::texture_impl texture_;
 	glyph *glyph_map_[256];
 	font_renderer *renderer_;
 };

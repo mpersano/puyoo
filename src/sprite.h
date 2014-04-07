@@ -53,11 +53,14 @@ public:
 	const sprite *get_sprite(const char *name) const
 	{ return dict_.get(name); }
 
-	const gfx::texture *get_texture() const
+	const gfx::texture& get_texture() const
 	{ return texture_; }
 
 private:
-	gfx::texture *texture_;
+	void load_texture(const char *name);
+	void load_sprites(const char *name);
+
+	gfx::texture_impl texture_;
 	dict<sprite> dict_;
 };
 

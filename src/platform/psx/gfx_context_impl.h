@@ -38,10 +38,10 @@ public:
 		draw_list_.add_sprite(x, y, u, v, width, height, color);
 	}
 
-	void bind_texture(const texture *tex)
+	void bind_texture(const texture& tex)
 	{
 		draw_list_.add_set_draw_mode(
-			static_cast<const psx_texture *>(tex)->page(),
+			static_cast<const psx_texture&>(tex).page(),
 			psx::gpu::COLOR_MODE_15BIT_DIRECT);
 	}
 

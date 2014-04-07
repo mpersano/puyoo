@@ -10,22 +10,28 @@ extern int get_texture_page(int width, int height);
 class psx_texture : public texture_base<psx_texture>
 {
 public:
-	psx_texture(image *img)
-	: texture_base<psx_texture>(img)
-	, page_(get_texture_page(image_->width(), image_->height()))
+	psx_texture()
+	: page_(-1)
+	, data_(0)
 	{ }
 
-	void upload_to_vram() const
+	~psx_texture()
 	{
-		const size_t width = image_->width();
-		const size_t height = image_->height();
+		if (data_)
+			delete[] data_;
+	}
 
-		uint16_t *data = new uint16_t[width*height];
+	void set_data(const image& img)
+	{
+		width_ = img.width();
+		height_ = img.height();
 
-		const uint32_t *src = image_->data();
-		uint16_t *dest = data;
+		data_ = new uint16_t[width_*height_];
 
-		for (size_t j = 0; j < width*height; j++) {
+		const uint32_t *src = img.data();
+		uint16_t *dest = data_;
+
+		for (size_t j = 0; j < width_*height_; j++) {
 			uint32_t v = *src++;
 			int r = v & 0xff;
 			int g = (v >> 8) & 0xff;
@@ -34,14 +40,17 @@ public:
 			*dest++ = a == 0 ? 0 : (b >> 3) | ((g >> 3) << 5) | ((r >> 3) << 10) | 0x8000;
 		}
 
+		page_ = get_texture_page(width_, height_);
+	}
+
+	void upload_to_vram() const
+	{
 		int vram_x = (page_ & 0xf) << 6;
 		int vram_y = ((page_ >> 4) & 1) << 8;
 
-		LoadImage(data, vram_x, vram_y, width, height);
+		LoadImage(data_, vram_x, vram_y, width_, height_);
 		while (GsIsDrawing())
 			;
-
-		delete[] data;
 	}
 
 	int page() const
@@ -49,6 +58,7 @@ public:
 
 private:
 	int page_;
+	uint16_t *data_;
 };
 
 typedef psx_texture texture_impl;

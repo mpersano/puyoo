@@ -56,14 +56,30 @@ private:
 };
 
 font::font(const char *name)
-: texture_(gfx::texture::load_from_tga(make_path(name, "TGA")))
 {
-	texture_->upload_to_vram();
+	load_texture(name);
+	load_glyphs(name);
+}
 
+void
+font::load_texture(const char *name)
+{
+	image *img = image::load_from_tga(make_path(name, "TGA"));
+
+	texture_.set_data(*img);
+	texture_.upload_to_vram();
+
+	delete img;
+}
+
+void
+font::load_glyphs(const char *name)
+{
 	file_reader reader(make_path(name, "FNT"));
 
 	const int glyph_width = reader.read_uint8();
 	const int glyph_height = reader.read_uint8();
+
 	char *chars = reader.read_string();
 
 	memset(glyph_map_, 0, sizeof(glyph_map_));
@@ -73,7 +89,7 @@ font::font(const char *name)
 	for (const char *p = chars; *p; p++) {
 		glyph_map_[static_cast<int>(*p)] = new glyph(u, v);
 
-		if ((u += glyph_width) >= texture_->width()) {
+		if ((u += glyph_width) >= texture_.width()) {
 			u = 0;
 			v += glyph_height;
 		}
@@ -90,9 +106,7 @@ font::font(const char *name)
 }
 
 font::~font()
-{
-	delete texture_;
-}
+{ }
 
 void
 font::draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const

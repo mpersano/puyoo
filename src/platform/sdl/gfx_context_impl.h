@@ -52,10 +52,10 @@ public:
 		add_sprite(x, y, u, v, 16, 16, color);
 	}
 
-	void bind_texture(const texture *tex)
+	void bind_texture(const texture& tex)
 	{
 		glEnable(GL_TEXTURE_RECTANGLE);
-		static_cast<const texture_impl *>(tex)->bind();
+		static_cast<const texture_impl&>(tex).bind();
 	}
 };
 
