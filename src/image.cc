@@ -4,6 +4,8 @@
 #include "file_reader.h"
 #include "image.h"
 
+namespace gfx {
+
 enum {
 	TGA_UNCOMPRESSED_TRUECOLOR = 2,
 };
@@ -71,4 +73,6 @@ image::image(size_t width, size_t height)
 image::~image()
 {
 	delete[] data_;
+}
+
 }

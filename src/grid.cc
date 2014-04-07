@@ -343,7 +343,7 @@ grid::drop_hanging_blocks()
 void
 grid::draw(gfx::context& gfx) const
 {
-	gfx.bind_texture(sprites->get_texture());
+	gfx.bind_texture(*sprites->get_texture());
 
 	draw_background(gfx);
 

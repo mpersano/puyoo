@@ -9,17 +9,12 @@ template <typename Impl>
 class texture_base
 {
 public:
-	texture_base()
-	: width_(0), height_(0)
+	texture_base(const image& img)
+	: width_(img.width()), height_(img.height())
 	{ }
 
 	virtual ~texture_base()
 	{ }
-
-	void set_data(const image& img)
-	{
-		static_cast<Impl *>(this)->set_data(img);
-	}
 
 	void upload_to_vram() const
 	{

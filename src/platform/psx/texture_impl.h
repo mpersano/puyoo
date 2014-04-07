@@ -10,22 +10,10 @@ extern int get_texture_page(int width, int height);
 class psx_texture : public texture_base<psx_texture>
 {
 public:
-	psx_texture()
-	: page_(-1)
-	, data_(0)
-	{ }
-
-	~psx_texture()
+	psx_texture(const image& img)
+	: texture_base<psx_texture>(img)
+	, page_(get_texture_page(width_, height_))
 	{
-		if (data_)
-			delete[] data_;
-	}
-
-	void set_data(const image& img)
-	{
-		width_ = img.width();
-		height_ = img.height();
-
 		data_ = new uint16_t[width_*height_];
 
 		const uint32_t *src = img.data();
@@ -39,8 +27,11 @@ public:
 			int a = (v >> 24);
 			*dest++ = a == 0 ? 0 : (b >> 3) | ((g >> 3) << 5) | ((r >> 3) << 10) | 0x8000;
 		}
+	}
 
-		page_ = get_texture_page(width_, height_);
+	~psx_texture()
+	{
+		delete[] data_;
 	}
 
 	void upload_to_vram() const

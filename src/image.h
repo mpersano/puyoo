@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stddef.h>
 
+namespace gfx {
+
 class image
 {
 public:
@@ -27,5 +29,7 @@ private:
 	size_t height_;
 	uint32_t *data_;
 };
+
+}
 
 #endif // IMAGE_H_

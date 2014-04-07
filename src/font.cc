@@ -64,10 +64,10 @@ font::font(const char *name)
 void
 font::load_texture(const char *name)
 {
-	image *img = image::load_from_tga(make_path(name, "TGA"));
+	gfx::image *img = gfx::image::load_from_tga(make_path(name, "TGA"));
 
-	texture_.set_data(*img);
-	texture_.upload_to_vram();
+	texture_ = new gfx::texture_impl(*img);
+	texture_->upload_to_vram();
 
 	delete img;
 }
@@ -89,7 +89,7 @@ font::load_glyphs(const char *name)
 	for (const char *p = chars; *p; p++) {
 		glyph_map_[static_cast<int>(*p)] = new glyph(u, v);
 
-		if ((u += glyph_width) >= texture_.width()) {
+		if ((u += glyph_width) >= texture_->width()) {
 			u = 0;
 			v += glyph_height;
 		}
@@ -106,7 +106,9 @@ font::load_glyphs(const char *name)
 }
 
 font::~font()
-{ }
+{
+	delete texture_;
+}
 
 void
 font::draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const
@@ -119,7 +121,7 @@ font::draw(gfx::context& gfx, int x, int y, const char *fmt, ...) const
 	vsprintf(buf, fmt, ap);
 	va_end(ap);
 
-	gfx.bind_texture(texture_);
+	gfx.bind_texture(*texture_);
 	renderer_->render(gfx, x, y, buf);
 }
 

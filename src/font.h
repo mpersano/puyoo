@@ -24,7 +24,7 @@ protected:
 	void load_texture(const char *name);
 	void load_glyphs(const char *name);
 
-	gfx::texture_impl texture_;
+	gfx::texture *texture_;
 	glyph *glyph_map_[256];
 	font_renderer *renderer_;
 };

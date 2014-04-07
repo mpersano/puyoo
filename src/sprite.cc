@@ -104,13 +104,18 @@ sprite_atlas::sprite_atlas(const char *name)
 	load_sprites(name);
 }
 
+sprite_atlas::~sprite_atlas()
+{
+	delete texture_;
+}
+
 void
 sprite_atlas::load_texture(const char *name)
 {
-	image *img = image::load_from_tga(make_path(name, "TGA"));
+	gfx::image *img = gfx::image::load_from_tga(make_path(name, "TGA"));
 
-	texture_.set_data(*img);
-	texture_.upload_to_vram();
+	texture_ = new gfx::texture_impl(*img);
+	texture_->upload_to_vram();
 
 	delete img;
 }
@@ -149,9 +154,6 @@ sprite_atlas::load_sprites(const char *name)
 		delete[] sheet_image;
 	}
 }
-
-sprite_atlas::~sprite_atlas()
-{ }
 
 sprite_atlas_manager&
 sprite_atlas_manager::instance()
