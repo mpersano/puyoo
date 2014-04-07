@@ -16,6 +16,8 @@ public:
 
 	virtual void render(gfx::context& gfx, int x, int y, const char *str) const = 0;
 
+	static font_renderer *make(const font::glyph *const *glyphs, int glyph_width, int glyph_height);
+
 protected:
 	const font::glyph *const *glyphs_;
 };
@@ -97,12 +99,7 @@ font::load_glyphs(const char *name)
 
 	delete[] chars;
 
-	if (glyph_width == 8 && glyph_height == 8)
-		renderer_ = new font_8x8_renderer(glyph_map_);
-	else if (glyph_width == 16 && glyph_height == 16)
-		renderer_ = new font_16x16_renderer(glyph_map_);
-	else
-		renderer_ = new font_generic_renderer(glyph_map_, glyph_width, glyph_height);
+	renderer_ = font_renderer::make(glyph_map_, glyph_width, glyph_height);
 }
 
 font::~font()
@@ -153,6 +150,17 @@ font_generic_renderer::render(gfx::context& gfx, int x, int y, const char *str) 
 		gfx.add_sprite(x, y, g->u_, g->v_, glyph_width_, glyph_height_, gfx::rgb(255, 255, 255));
 		x += glyph_width_;
 	}
+}
+
+font_renderer *
+font_renderer::make(const font::glyph *const *glyphs, int glyph_width, int glyph_height)
+{
+	if (glyph_width == 8 && glyph_height == 8)
+		return new font_8x8_renderer(glyphs);
+	else if (glyph_width == 16 && glyph_height == 16)
+		return new font_16x16_renderer(glyphs);
+	else
+		return new font_generic_renderer(glyphs, glyph_width, glyph_height);
 }
 
 font_manager&

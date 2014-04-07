@@ -40,6 +40,8 @@ public:
 
 	void draw(gfx::context& gfx, const rect& clip, int x, int y) const;
 
+	static sprite *make(int u, int v, int width, int height);
+
 protected:
 	int u_, v_;
 };

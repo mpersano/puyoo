@@ -22,6 +22,8 @@ extern const sprite *block_sprites[NUM_BLOCK_TYPES];
 class control_strategy
 {
 public:
+	static control_strategy *make(bool player_control);
+
 	virtual ~control_strategy() { }
 
 	virtual bool update(falling_block *fb, const grid *g, unsigned dpad_state) = 0;
@@ -40,9 +42,7 @@ public:
 };
 
 falling_block::falling_block(bool player_control)
-: control_strategy_(
-	player_control ? static_cast<control_strategy *>(new player_control_strategy) :
-			 static_cast<control_strategy *>(new computer_control_strategy))
+: control_strategy_(control_strategy::make(player_control))
 {
 	reset();
 }
@@ -307,6 +307,15 @@ computer_control_strategy::update(falling_block *fb, const grid *g, unsigned dpa
 		return fb->move_down(g);
 
 	return true;
+}
+
+control_strategy *
+control_strategy::make(bool player_control)
+{
+	if (player_control)
+		return new player_control_strategy;
+	else
+		return new computer_control_strategy;
 }
 
 void

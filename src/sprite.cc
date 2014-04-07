@@ -98,6 +98,17 @@ private:
 	int width_, height_;
 };
 
+sprite *
+sprite::make(int u, int v, int width, int height)
+{
+	if (width == 8 && height == 8)
+		return new sprite_8x8(u, v);
+	else if (width == 16 && height == 16)
+		return new sprite_16x16(u, v);
+	else
+		return new sprite_generic(u, v, width, height);
+}
+
 sprite_atlas::sprite_atlas(const char *name)
 {
 	load_texture(name);
@@ -139,16 +150,7 @@ sprite_atlas::load_sprites(const char *name)
 		printf("sprite: %s %s %d %d %d %d\n",
 		  orig_image, sheet_image, u, v, width, height);
 
-		sprite *spr;
-
-		if (width == 8 && height == 8)
-			spr = new sprite_8x8(u, v);
-		else if (width == 16 && height == 16)
-			spr = new sprite_16x16(u, v);
-		else
-			spr = new sprite_generic(u, v, width, height);
-
-		dict_.put(orig_image, spr);
+		dict_.put(orig_image, sprite::make(u, v, width, height));
 
 		delete[] orig_image;
 		delete[] sheet_image;
