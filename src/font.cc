@@ -58,25 +58,10 @@ private:
 };
 
 font::font(const char *name)
+: texture_(gfx::texture::load_from_tga(make_path(name, "TGA")))
 {
-	load_texture(name);
-	load_glyphs(name);
-}
-
-void
-font::load_texture(const char *name)
-{
-	gfx::image *img = gfx::image::load_from_tga(make_path(name, "TGA"));
-
-	texture_ = new gfx::texture_impl(*img);
 	texture_->upload_to_vram();
 
-	delete img;
-}
-
-void
-font::load_glyphs(const char *name)
-{
 	file_reader reader(make_path(name, "FNT"));
 
 	const int glyph_width = reader.read_uint8();

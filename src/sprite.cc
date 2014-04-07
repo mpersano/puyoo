@@ -110,30 +110,10 @@ sprite::make(int u, int v, int width, int height)
 }
 
 sprite_atlas::sprite_atlas(const char *name)
+: texture_(gfx::texture::load_from_tga(make_path(name, "TGA")))
 {
-	load_texture(name);
-	load_sprites(name);
-}
-
-sprite_atlas::~sprite_atlas()
-{
-	delete texture_;
-}
-
-void
-sprite_atlas::load_texture(const char *name)
-{
-	gfx::image *img = gfx::image::load_from_tga(make_path(name, "TGA"));
-
-	texture_ = new gfx::texture_impl(*img);
 	texture_->upload_to_vram();
 
-	delete img;
-}
-
-void
-sprite_atlas::load_sprites(const char *name)
-{
 	file_reader reader(make_path(name, "SPR"));
 
 	int num_sprites = reader.read_uint8();
@@ -155,6 +135,11 @@ sprite_atlas::load_sprites(const char *name)
 		delete[] orig_image;
 		delete[] sheet_image;
 	}
+}
+
+sprite_atlas::~sprite_atlas()
+{
+	delete texture_;
 }
 
 sprite_atlas_manager&

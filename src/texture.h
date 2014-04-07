@@ -27,6 +27,14 @@ public:
 	size_t height() const
 	{ return height_; }
 
+	static texture_base *load_from_tga(const char *path)
+	{
+		gfx::image *img = gfx::image::load_from_tga(path);
+		texture_base *tex = new Impl(*img);
+		delete img;
+		return tex;
+	}
+
 protected:
 	size_t width_;
 	size_t height_;

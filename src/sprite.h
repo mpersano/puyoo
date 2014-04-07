@@ -59,9 +59,6 @@ public:
 	{ return texture_; }
 
 private:
-	void load_texture(const char *name);
-	void load_sprites(const char *name);
-
 	gfx::texture *texture_;
 	dict<sprite> dict_;
 };
