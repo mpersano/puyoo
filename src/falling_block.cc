@@ -135,44 +135,24 @@ bool
 falling_block::update(const grid *g, unsigned dpad_state)
 {
 	switch (state_) {
-		case STATE_PLAYER_CONTROL:
-			if (!control_strategy_->update(this, g, dpad_state))
-				return false;
-
-			if (state_ == STATE_PLAYER_CONTROL) {
-				if (drop_tics_ > 0) {
-					--drop_tics_;
-				} else {
-					if (can_move(g, -1, 0)) {
-						set_state(STATE_DROPPING);
-						return true;
-					} else {
-						/* can't drop */
-						return false;
-					}
-				}
-			}
-
-			return true;
-
 		case STATE_MOVING_LEFT:
 			if (++state_tics_ == ANIMATION_TICS) {
 				--col_;
 				set_state(STATE_WAITING);
 			}
-			return true;
+			break;
 
 		case STATE_MOVING_RIGHT:
 			if (++state_tics_ == ANIMATION_TICS) {
 				++col_;
 				set_state(STATE_WAITING);
 			}
-			return true;
+			break;
 
 		case STATE_WAITING:
 			if (++state_tics_ == WAIT_TICS)
 				set_state(STATE_PLAYER_CONTROL);
-			return true;
+			break;
 
 		case STATE_DROPPING:
 			if (++state_tics_ == ANIMATION_TICS) {
@@ -180,7 +160,7 @@ falling_block::update(const grid *g, unsigned dpad_state)
 				drop_tics_ = DROP_INTERVAL;
 				set_state(STATE_PLAYER_CONTROL);
 			}
-			return true;
+			break;
 
 		case STATE_ROTATING:
 			if (++state_tics_ == ROTATION_TICS) {
@@ -189,12 +169,31 @@ falling_block::update(const grid *g, unsigned dpad_state)
 
 				set_state(STATE_PLAYER_CONTROL);
 			}
-			return true;
+			break;
 
 		default:
-			// NOTREACHED (?)
-			return false;
+			break;
 	}
+
+	if (state_ == STATE_PLAYER_CONTROL) {
+		if (!control_strategy_->update(this, g, dpad_state))
+			return false;
+
+		if (state_ == STATE_PLAYER_CONTROL) {
+			if (drop_tics_ > 0) {
+				--drop_tics_;
+			} else {
+				if (!can_move(g, -1, 0)) {
+					// can't drop
+					return false;
+				}
+
+				set_state(STATE_DROPPING);
+			}
+		}
+	}
+
+	return true;
 }
 
 bool
