@@ -116,7 +116,7 @@ sprite_atlas::sprite_atlas(const char *name)
 
 	file_reader reader(make_path(name, "SPR"));
 
-	int num_sprites = reader.read_uint8();
+	int num_sprites = reader.read_uint16();
 
 	for (int i = 0; i < num_sprites; i++) {
 		char *orig_image = reader.read_string();
