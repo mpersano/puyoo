@@ -28,6 +28,6 @@ for i in $( seq 2 5 ); do
 		png32:$SPRITE_PATH/$i.png
 done
 
-./pack-sprites -b 0 $SHEET $SPRITE_PATH 256 256 && ( \
+./pack-sprites -b 0 -w 256 -h 256 $SHEET $SPRITE_PATH && ( \
 	convert $SHEET.000.png ../data/$SHEET.TGA;
 	mv $SHEET.spr ../data/$SHEET.SPR )
