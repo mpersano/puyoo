@@ -117,23 +117,24 @@ sprite_atlas::sprite_atlas(const char *name)
 	file_reader reader(make_path(name, "SPR"));
 
 	int num_sprites = reader.read_uint16();
+	int num_sheets = reader.read_uint8();
 
 	for (int i = 0; i < num_sprites; i++) {
 		char *orig_image = reader.read_string();
-		char *sheet_image = reader.read_string();
+
+		int sheet_index = reader.read_uint8();
 
 		int u = reader.read_uint16();
 		int v = reader.read_uint16();
 		int width = reader.read_uint16();
 		int height = reader.read_uint16();
 
-		printf("sprite: %s %s %d %d %d %d\n",
-		  orig_image, sheet_image, u, v, width, height);
+		printf("sprite: %s %d %d %d %d %d\n",
+		  orig_image, sheet_index, u, v, width, height);
 
 		dict_.put(orig_image, sprite::make(u, v, width, height));
 
 		delete[] orig_image;
-		delete[] sheet_image;
 	}
 }
 
